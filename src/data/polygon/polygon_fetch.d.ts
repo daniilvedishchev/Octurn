@@ -1,0 +1,1 @@
+export function installPolygonFetch(Module: any,apiKey: string): void;

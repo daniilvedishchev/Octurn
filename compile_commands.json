@@ -1,0 +1,62 @@
+[
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/node/Node.cpp.o -c /Users/kodalir/Kayiros/Octurn/node/Node.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/node/Node.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/node/Node.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/parser/Parser.cpp.o -c /Users/kodalir/Kayiros/Octurn/parser/Parser.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/parser/Parser.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/parser/Parser.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/lexer/Lexer.cpp.o -c /Users/kodalir/Kayiros/Octurn/lexer/Lexer.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/lexer/Lexer.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/lexer/Lexer.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/interpreter/Interpretator.cpp.o -c /Users/kodalir/Kayiros/Octurn/interpreter/Interpretator.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/interpreter/Interpretator.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/interpreter/Interpretator.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/utils/Utils.cpp.o -c /Users/kodalir/Kayiros/Octurn/utils/Utils.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/utils/Utils.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/utils/Utils.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/log/logHandler.cpp.o -c /Users/kodalir/Kayiros/Octurn/log/logHandler.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/log/logHandler.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/log/logHandler.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/TA/taLib.cpp.o -c /Users/kodalir/Kayiros/Octurn/TA/taLib.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/TA/taLib.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/TA/taLib.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_core.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_core.dir/Octurn/mappers/maps.cpp.o -c /Users/kodalir/Kayiros/Octurn/mappers/maps.cpp",
+  "file": "/Users/kodalir/Kayiros/Octurn/mappers/maps.cpp",
+  "output": "CMakeFiles/octurn_core.dir/Octurn/mappers/maps.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_wasm.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_wasm.dir/wasm/octurn_api.cpp.o -c /Users/kodalir/Kayiros/wasm/octurn_api.cpp",
+  "file": "/Users/kodalir/Kayiros/wasm/octurn_api.cpp",
+  "output": "CMakeFiles/octurn_wasm.dir/wasm/octurn_api.cpp.o"
+},
+{
+  "directory": "/Users/kodalir/Kayiros",
+  "command": "/Users/kodalir/emsdk/upstream/emscripten/em++  @CMakeFiles/octurn_wasm.dir/includes_CXX.rsp -std=c++20 -o CMakeFiles/octurn_wasm.dir/src/data/polygon/polygon_wasm_bridge.cpp.o -c /Users/kodalir/Kayiros/src/data/polygon/polygon_wasm_bridge.cpp",
+  "file": "/Users/kodalir/Kayiros/src/data/polygon/polygon_wasm_bridge.cpp",
+  "output": "CMakeFiles/octurn_wasm.dir/src/data/polygon/polygon_wasm_bridge.cpp.o"
+}
+]

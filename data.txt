@@ -1,0 +1,45 @@
+config {
+    user {max_risk: 5}
+    slippage: true
+    max_drawdown: 10
+}
+
+data [
+    {
+        ticker: AAPL
+        timeframe: day
+        from: 2025-09-01
+        to: 2025-10-27
+    },
+    {
+        ticker: MSFT
+        timeframe: day
+        from: 2025-08-01
+        to: 2025-10-27
+    }
+]
+
+strategy SimpleMA {
+
+    parameters {
+        fast_ma: 10
+        slow_ma: 30
+    }
+
+    indicators {
+        fast_ma = SMA(close, fast_ma)
+        slow_ma = SMA(close, slow_ma)
+    }
+
+    entry {
+        when fast_ma crosses above slow_ma {
+            buy 1000
+        }
+    }
+
+    exit {
+        when fast_ma crosses below slow_ma {
+            sell all
+        }
+    }
+}

@@ -107,17 +107,12 @@ struct OpMinus {
 struct OpMultiply {
     template<typename L,typename R>
     double operator()(const L& a, const R& b) const { 
-        
-        g_logger.report("************MULTIPLY CALLLED**************");
 
         if constexpr (!(std::is_same_v<L, double> && std::is_same_v<R, double>)) {
             throw std::runtime_error(
                 std::format("Incorrect usage of multiplication operator on type {}", typeid(a).name())
             );
         } else {
-            std::cout<<"Multiplication result: ";
-            std::cout<<a*b<<"\n";
-            
             return a * b;
         }
         

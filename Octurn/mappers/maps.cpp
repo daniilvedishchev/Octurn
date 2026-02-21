@@ -15,3 +15,4 @@ std::unordered_map<uint8_t, std::string> OHLC_INDEX_MAP = {
     {2,"low"},
     {3,"close"},
 };
+

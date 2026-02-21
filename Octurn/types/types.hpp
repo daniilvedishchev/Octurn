@@ -1,8 +1,11 @@
 #pragma once
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
-#include <string>
-#include <map>
 
 // ==== Global forward declaration ==== //
 struct ASTNode;

@@ -2,6 +2,7 @@
 #include "utils/Utils.hpp"
 #include "log/logHandler.hpp"
 #include "src/data/polygon/polygon_wasm_bridge.hpp"
+#include "config/configStruc.hpp"
 #include <iostream>
 #include <numeric>
 #include <string>
@@ -101,7 +102,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
         // ==== Recursive propagation through all childs ==== //
         auto evaluated_expression = condition->accept(visitor);
         variables_["Entry"] = evaluated_expression;
-        std::cout<<"Trapped!"<<"\n";
+
         return evaluated_expression;
     } else throw std::runtime_error("\"Entry\" block is not defined!");
     
@@ -317,7 +318,7 @@ std::unordered_map<std::string,bool> Interpreter::get_flags(){
 //                   Evaluate Config Map
 // - Helper function for evaluate parameters
 // ====================================================== //
-void Interpreter::eval_config_map(const NodeMap& map){
+void Interpreter::eval_config_map(const NodeMap& map,configStructure& configStructure){
 
     // ====================================== //
     // If value is double -> put this in variable section
@@ -330,22 +331,24 @@ void Interpreter::eval_config_map(const NodeMap& map){
         if (auto value = std::dynamic_pointer_cast<ASTValueNode>(node_value)) {
 
             if (std::holds_alternative<double>(value->value)) {
+                
                 variables_[key] = std::get<double>(value->value);
             }
             else if (std::holds_alternative<bool>(value->value)) {
                 flags_[key] = std::get<bool>(value->value);
             }
             else if (std::holds_alternative<NodeMap>(value->value)) {
-                eval_config_map(std::get<NodeMap>(value->value));
+                eval_config_map(std::get<NodeMap>(value->value),configStructure);
             }
 
         } else if (auto block = std::dynamic_pointer_cast<ASTBlock>(node_value)) {
-            eval_config_map(block->entries);
+            eval_config_map(block->entries,configStructure);
         }
     }
 }
 
 void Interpreter::eval_config(const std::shared_ptr<ASTBlock>& block){
-    eval_config_map(block->entries);
+    configStructure cfg;
+    eval_config_map(block->entries, cfg);
 }
 

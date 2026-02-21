@@ -7,7 +7,7 @@
 #include <variant>
 #include <map>
 #include "lexer/Lexer.hpp"
-#include "types.hpp"
+#include "types/types.hpp"
 
 using Octurn::NodeMap;
 using Octurn::AnyValue;

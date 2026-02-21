@@ -5,9 +5,10 @@
 #include <memory>
 #include <variant>
 #include "node/Node.hpp"
-#include "types.hpp"
+#include "types/types.hpp"
 #include "mappers/maps.hpp"
 #include "src/data/pending.hpp"
+
 
 using Octurn::AnyValue;
 using Octurn::multiValue;
@@ -45,7 +46,7 @@ class Interpreter {
         // ================== Optional methods ==================== //
         bool eval_condition(const std::shared_ptr<ASTNode>& node);
         void execute_action(const std::shared_ptr<ASTAction>& action);
-        void eval_config_map(const NodeMap& map);
+        void eval_config_map(const NodeMap& map,configStructure& configStructure);
         // ================ Optional methods END ================== //
 
         // ============= Async-JS-C++(sync) methods =============== //

@@ -1,5 +1,5 @@
 #pragma once
-#include "types.hpp" // Project namespace //
+#include "types/types.hpp" // Project namespace //
 #include "lexer/Token.hpp"
 #include <map>
 #include <string>

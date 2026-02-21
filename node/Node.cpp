@@ -1,5 +1,5 @@
 #include "node/Node.hpp"
-#include "operators.hpp"
+#include "lexer/operators.hpp"
 
 using Octurn::AnyValue;
 using Octurn::multiValue;

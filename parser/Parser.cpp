@@ -169,7 +169,6 @@ std::shared_ptr<ASTNode> Parser::parse_config(){
 
         auto block = parse_nested_block(type);
         
-
         return block;
     }
 

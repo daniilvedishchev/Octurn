@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "interpreter/Interpretor.hpp"
-#include "types.hpp"
+#include "types/types.hpp"
 
 // ===============================================
 //                Helper functions

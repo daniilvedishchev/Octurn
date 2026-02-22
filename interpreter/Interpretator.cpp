@@ -318,7 +318,7 @@ std::unordered_map<std::string,bool> Interpreter::get_flags(){
 //                   Evaluate Config Map
 // - Helper function for evaluate parameters
 // ====================================================== //
-void Interpreter::eval_config_map(const NodeMap& map,configStructure& configStructure){
+void Interpreter::eval_config_map(const NodeMap& map){
 
     // ====================================== //
     // If value is double -> put this in variable section
@@ -331,24 +331,44 @@ void Interpreter::eval_config_map(const NodeMap& map,configStructure& configStru
         if (auto value = std::dynamic_pointer_cast<ASTValueNode>(node_value)) {
 
             if (std::holds_alternative<double>(value->value)) {
-                
+
                 variables_[key] = std::get<double>(value->value);
             }
             else if (std::holds_alternative<bool>(value->value)) {
                 flags_[key] = std::get<bool>(value->value);
             }
             else if (std::holds_alternative<NodeMap>(value->value)) {
-                eval_config_map(std::get<NodeMap>(value->value),configStructure);
+                eval_config_map(std::get<NodeMap>(value->value));
             }
 
         } else if (auto block = std::dynamic_pointer_cast<ASTBlock>(node_value)) {
-            eval_config_map(block->entries,configStructure);
+            eval_config_map(block->entries);
         }
+    }
+}
+// ALL OTHER VARIABLES NOT MEETING CONDITIONS FOR CONFIG BLOCK WILL BE DELETED!!!!!
+// PS make variables section for each block!!!!
+void Interpreter::build_config(std::__2::unordered_map<std::__2::string, Rule>::iterator& cfgIt,
+std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt){
+    cfg_.cfgIt->first
+}
+
+bool Interpreter::required_config_parameteters_in(){
+    bool configured;
+    for (auto cfgIt = cfgTemplate.begin();cfgIt != cfgTemplate.end();cfgIt++){
+        auto varIt = variables_.find(cfgIt->first);
+        // if required and not in the variable section -> throw
+        if (cfgIt->second.required == true && varIt == variables_.end()){
+            std::runtime_error(std::format("Required config parameter \"{}\" is missing",cfgIt->first));
+            configured = false;
+        } else if (cfgIt->second.required == false && varIt == variables_.end()){
+            continue;
+        } else build_config(cfgIt,varIt);
     }
 }
 
 void Interpreter::eval_config(const std::shared_ptr<ASTBlock>& block){
-    configStructure cfg;
-    eval_config_map(block->entries, cfg);
+    eval_config_map(block->entries);
+
 }
 

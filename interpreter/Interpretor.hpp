@@ -8,6 +8,8 @@
 #include "types/types.hpp"
 #include "mappers/maps.hpp"
 #include "src/data/pending.hpp"
+#include "configStruc.hpp"
+#include "cfgTemp.hpp"
 
 
 using Octurn::AnyValue;
@@ -46,7 +48,10 @@ class Interpreter {
         // ================== Optional methods ==================== //
         bool eval_condition(const std::shared_ptr<ASTNode>& node);
         void execute_action(const std::shared_ptr<ASTAction>& action);
-        void eval_config_map(const NodeMap& map,configStructure& configStructure);
+        void eval_config_map(const NodeMap& map);
+        void build_config(std::__2::unordered_map<std::__2::string, Rule>::iterator& cfgIt,
+        std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt);
+        bool required_config_parameteters_in();
         // ================ Optional methods END ================== //
 
         // ============= Async-JS-C++(sync) methods =============== //
@@ -67,6 +72,8 @@ class Interpreter {
         std::unordered_map<std::string,bool> flags_;
         std::vector<pendingOHLC> pending_;
         std::shared_ptr<Strategy> pending_strategy_;
+        configStructure cfg_;
+
 
         RunState state_ = RunState::Parsing;
 

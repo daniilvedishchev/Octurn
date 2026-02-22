@@ -350,12 +350,16 @@ void Interpreter::eval_config_map(const NodeMap& map){
 // PS make variables section for each block!!!!
 void Interpreter::build_config(std::__2::unordered_map<std::__2::string, Rule>::iterator& cfgIt,
 std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt){
-    cfg_.cfgIt->first
+    std::string error;
+    bool validated {cfgIt->second.validate(varIt->second,cfg_,error)};
+    if (!validated){
+        std::runtime_error(std::format("Unable to build config, error occured: {}",error));
+    }
 }
 
 bool Interpreter::required_config_parameteters_in(){
     bool configured;
-    for (auto cfgIt = cfgTemplate.begin();cfgIt != cfgTemplate.end();cfgIt++){
+    for (auto cfgIt = cfgTemplate.begin(); cfgIt != cfgTemplate.end();cfgIt++){
         auto varIt = variables_.find(cfgIt->first);
         // if required and not in the variable section -> throw
         if (cfgIt->second.required == true && varIt == variables_.end()){
@@ -365,6 +369,7 @@ bool Interpreter::required_config_parameteters_in(){
             continue;
         } else build_config(cfgIt,varIt);
     }
+    return configured;
 }
 
 void Interpreter::eval_config(const std::shared_ptr<ASTBlock>& block){

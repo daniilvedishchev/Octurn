@@ -7,12 +7,17 @@
  *      - positionMode - fixed or equity percentage 
 */
 
+
 enum class Mode {
     fixed,
     percent
 };
 
-struct configStructure{
+enum class cfgKey{
+    equity,comissionBps,slippageBps,positionSize,positionMode
+};
+
+struct config{
     double equity;
     double commissionBps;
     double slippageBps;

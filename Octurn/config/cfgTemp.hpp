@@ -1,9 +1,10 @@
+#pragma once
 #include <functional>
 #include <variant>
 #include <string>
 #include <optional>
 #include <unordered_map>
-#include "configStruc.hpp"
+#include "config/configStruc.hpp"
 #include "types/types.hpp"
 
 using Octurn::AnyValue;
@@ -17,4 +18,4 @@ struct Rule {
     std::function<bool(const AnyValue&,config& cfg,std::string&)> validate;
 };
 
-std::unordered_map<std::string, Rule> cfgTemplate;
+extern std::unordered_map<std::string, Rule> cfgTemplate;

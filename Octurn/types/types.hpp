@@ -16,10 +16,11 @@ namespace Octurn {
     using multiValue = std::vector<AnyValue>;
     
     using NodeMap = std::map<std::string, std::shared_ptr<ASTNode>>;
-    using taFunctionCall = std::function<std::vector<double>(const multiValue& args,std::unordered_map<std::string,AnyValue>&variables_)>;
+    using taFunctionCall = std::function<std::vector<double>(const multiValue& args,
+                                                             std::unordered_map<std::string,AnyValue>& variables_)>;
 
-    struct AnyValue : std::variant<double, bool, std::string, multiValue, std::vector<double>,std::vector<bool>> {
-        using base = std::variant<double, bool, std::string, multiValue, std::vector<double>,std::vector<bool>>;
+    struct AnyValue : std::variant<double, bool, std::string, multiValue, std::vector<double>,std::vector<bool>,std::vector<int>> {
+        using base = std::variant<double, bool, std::string, multiValue, std::vector<double>,std::vector<bool>,std::vector<int>>;
         using base::base;
     };
 

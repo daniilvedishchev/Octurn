@@ -1,4 +1,4 @@
-#include "cfgTemp.hpp"
+#include "config/cfgTemp.hpp"
 
 std::unordered_map<std::string, Rule> cfgTemplate = {
     { "equity", {

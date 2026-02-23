@@ -7,9 +7,9 @@
 #include "node/Node.hpp"
 #include "types/types.hpp"
 #include "mappers/maps.hpp"
-#include "src/data/pending.hpp"
-#include "configStruc.hpp"
-#include "cfgTemp.hpp"
+#include "config/configStruc.hpp"
+#include "config/cfgTemp.hpp"
+#include "src/polygon/polygonDataFeed.hpp"
 
 
 using Octurn::AnyValue;
@@ -17,15 +17,13 @@ using Octurn::multiValue;
 using Octurn::taFunctionCall;
 using vect_of_vect = std::vector<std::vector<double>>;
 
-enum class RunState { Parsing, WaitingData, ReadyToRun, Done };
-
 class Interpreter {
     public:
 
         // ============= Constructor + Run + Getters ============ //
         // ===== Constructor takes root pointer to the tree ===== //
 
-        Interpreter(std::shared_ptr<ASTNode>& root);
+        Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder);
         void run();
 
         // ========== Getters for variables and flags =========== //
@@ -49,20 +47,13 @@ class Interpreter {
         bool eval_condition(const std::shared_ptr<ASTNode>& node);
         void execute_action(const std::shared_ptr<ASTAction>& action);
         void eval_config_map(const NodeMap& map);
-        void build_config(std::__2::unordered_map<std::__2::string, Rule>::iterator& cfgIt,
-        std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt);
-        bool required_config_parameteters_in();
+        void build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
+        std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt);
+        void required_config_parameteters_in();
         // ================ Optional methods END ================== //
 
-        // ============= Async-JS-C++(sync) methods =============== //
-        void poll_fetches();
-        void tick();
 
         std::unordered_map<Tokentype, std::function<void(const std::shared_ptr<ASTBlock>&)>> strategy_blocks;
-        
-        inline bool is_done(){
-            return state_ == RunState::Done ? true : false;
-        }
 
 
     private:
@@ -70,13 +61,11 @@ class Interpreter {
         std::shared_ptr<ASTNode> root_;
         std::unordered_map<std::string,AnyValue> variables_;
         std::unordered_map<std::string,bool> flags_;
-        std::vector<pendingOHLC> pending_;
-        std::shared_ptr<Strategy> pending_strategy_;
-        configStructure cfg_;
 
+        polygonDataFeed feeder_;
 
-        RunState state_ = RunState::Parsing;
-
-
-
+        // ==== Variable storage for each block ==== //
+        config cfg_;
+        std::unordered_map<std::string,AnyValue> parameters_;
+        std::unordered_map<std::string, AnyValue> data_;
 };

@@ -18,6 +18,7 @@ AnyValue compare_vectors_values(AnyValue& left, AnyValue& right, const std::stri
 
 struct ExecutionContext {
     std::unordered_map<std::string, AnyValue>& variables;
+    std::unordered_map<std::string, AnyValue>& data;
     std::unordered_map<std::string, taFunctionCall>& functionMapper;
 };
 

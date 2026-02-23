@@ -89,6 +89,7 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
 
     auto it = ctx->functionMapper.find(name);
     auto& variables_ = ctx->variables;
+    auto& data_ = ctx->data;
 
     std::vector<double> output;
 

@@ -1,54 +1,39 @@
 #include "Interpretor.hpp"
 #include "utils/Utils.hpp"
 #include "log/logHandler.hpp"
-#include "src/data/polygon/polygon_wasm_bridge.hpp"
-#include "config/configStruc.hpp"
 #include <iostream>
 #include <numeric>
 #include <string>
 #include <regex>
 
-#ifndef __EMSCRIPTEN__
-  #include <nlohmann/json.hpp>
-  #include <cpr/cpr.h>
-#endif
-
-#include <emscripten.h>
-#include <emscripten/bind.h>
 
 #define OHLC_SIZE 4
 
-void Interpreter::poll_fetches() {
-    
-    if (pending_.empty()){
-        state_ = RunState::ReadyToRun;
-        return;
-    }
-
-    for (auto it = pending_.begin(); it != pending_.end(); ) {
-        const auto ticker  = it->ticker;
-        const auto fetchId = it->id;
-
-        if (ohlc_ready(fetchId)) {
-            auto OHLC = get_ohlc(fetchId);
-
-            if (OHLC.size() >= 4) {
-               
-                variables_[ticker+"_open"]  = std::move(OHLC[0]);
-                variables_[ticker+"_high"]  = std::move(OHLC[1]);
-                variables_[ticker+"_low"]   = std::move(OHLC[2]);
-                variables_[ticker+"_close"] = std::move(OHLC[3]);
-            }
-
-            it = pending_.erase(it);
-        } else {
-            ++it;
-        }
-    }
-}
-
+// ====================================================== //
+//            Interpreter class constructor
+// - Initializes strategy block map
+// - Initializes function map -> exec function written by user
 // ====================================================== //
 
+// ====================================================== //
+Interpreter::Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder)
+    : root_(std::move(root)),feeder_(std::move(feeder))
+{
+    strategy_blocks = {
+        {Tokentype::Config, [this](const std::shared_ptr<ASTBlock>& block){
+            this->eval_config(block);
+        }},
+        { Tokentype::Parameters, [this](const std::shared_ptr<ASTBlock>& block) {
+            this->eval_parameters(block);
+        }},
+        { Tokentype::Indicators, [this](const std::shared_ptr<ASTBlock>& block) {
+            this->eval_indicators(block);
+        }},
+        { Tokentype::Entry, [this](const std::shared_ptr<ASTBlock>& block) {
+            this->eval_entry(block);
+        }}
+    };
+}
 // ------------------------------------------------------------------------------------------------------------------- //
 
 // ====================================================== //
@@ -61,7 +46,6 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
         for (auto& data_block : list_node->list){
             std::string ticker,timespan,from,to;
             int multiplier;
-
             if (auto fetching_params_node = std::dynamic_pointer_cast<ASTBlock>(data_block)){
                 auto fetching_params = fetching_params_node->entries;
                 for (auto& [key,value]:fetching_params){
@@ -81,9 +65,7 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
                 throw std::runtime_error("No ticker found");
             }
 
-            const int id = request_ohlc(ticker,multiplier,timespan,from,to);
-            pending_.push_back(pendingOHLC{ticker,id});
-            state_ = RunState::WaitingData;
+            feeder_.loadBars(ticker,multiplier,from,to,timespan);
         }
     }
 }
@@ -96,7 +78,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
         auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Conditions"]);
 
         // ==== Create visitor to get callable type ==== //
-        ExecutionContext ctx{variables_, functionMap};
+        ExecutionContext ctx{variables_, data_, functionMap};
         Visitor visitor(ctx);
 
         // ==== Recursive propagation through all childs ==== //
@@ -112,27 +94,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
 
 // ------------------------------------------------------------------------------------------------------------------- //
 
-// ====================================================== //
-//            Interpreter class constructor
-// - Initializes strategy block map
-// - Initializes function map -> exec function written by user
-// ====================================================== //
 
-Interpreter::Interpreter(std::shared_ptr<ASTNode>& root)
-    : root_(std::move(root))
-{
-    strategy_blocks = {
-        { Tokentype::Parameters, [this](const std::shared_ptr<ASTBlock>& block) {
-            this->eval_parameters(block);
-        }},
-        { Tokentype::Indicators, [this](const std::shared_ptr<ASTBlock>& block) {
-            this->eval_indicators(block);
-        }},
-        { Tokentype::Entry, [this](const std::shared_ptr<ASTBlock>& block) {
-            this->eval_entry(block);
-        }}
-    };
-}
 // ====================================================== //
 
 // ------------------------------------------------------------------------------------------------------------------- //
@@ -173,7 +135,7 @@ void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
     g_logger.report(std::string("Indicator interpreter is launched."));
 
     // ==== Evaluates indicator section and expands indicator section ==== //
-    ExecutionContext ctx{variables_, functionMap};
+    ExecutionContext ctx{variables_, data_, functionMap};
     for (auto& [key,assignment] : block->entries){
         g_logger.report(std::string("Indicator found: " + key));
 
@@ -215,27 +177,8 @@ void Interpreter::eval_program(const std::shared_ptr<ASTRoot>& root){
         auto data_block = std::dynamic_pointer_cast<ASTList>(root->data);
         eval_data(data_block);
     }
-
-    pending_strategy_ = std::dynamic_pointer_cast<Strategy>(root->strategy);
-
-    if (!pending_strategy_) {
-        throw std::runtime_error("Couldn't interpret strategy block");
-    }
 };
 // ====================================================== //
-
-void Interpreter::tick() {
-    if (state_ == RunState::WaitingData) {
-        poll_fetches();
-        if (!pending_.empty()) return;
-        state_ = RunState::ReadyToRun;
-    }
-
-    if (state_ == RunState::ReadyToRun) {
-        eval_strategy(pending_strategy_);
-        state_ = RunState::Done;
-    }
-}
 
 // ------------------------------------------------------------------------------------------------------------------- //
 
@@ -255,7 +198,8 @@ void Interpreter::eval_strategy(const std::shared_ptr<Strategy>& strategy){
         if (auto block_node = std::dynamic_pointer_cast<ASTBlock>(block)){
             auto type = block_node->block_type.value();
             auto it = strategy_blocks.find(type);
-            std::cout<<std::format("Interpretation of {}",to_string(type))<<"\n";
+            std::cout << "Interpretation f " << to_string(type) << std::endl;
+            std::cout << "sdqsdsqd of " << to_string(type) << std::endl;
             if (it!=strategy_blocks.end()){
                 it->second(block_node);
             }
@@ -348,8 +292,8 @@ void Interpreter::eval_config_map(const NodeMap& map){
 }
 // ALL OTHER VARIABLES NOT MEETING CONDITIONS FOR CONFIG BLOCK WILL BE DELETED!!!!!
 // PS make variables section for each block!!!!
-void Interpreter::build_config(std::__2::unordered_map<std::__2::string, Rule>::iterator& cfgIt,
-std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt){
+void Interpreter::build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
+std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt){
     std::string error;
     bool validated {cfgIt->second.validate(varIt->second,cfg_,error)};
     if (!validated){
@@ -357,23 +301,20 @@ std::__2::unordered_map<std::__2::string, Octurn::AnyValue>::iterator& varIt){
     }
 }
 
-bool Interpreter::required_config_parameteters_in(){
-    bool configured;
+void Interpreter::required_config_parameteters_in(){
     for (auto cfgIt = cfgTemplate.begin(); cfgIt != cfgTemplate.end();cfgIt++){
         auto varIt = variables_.find(cfgIt->first);
         // if required and not in the variable section -> throw
         if (cfgIt->second.required == true && varIt == variables_.end()){
             std::runtime_error(std::format("Required config parameter \"{}\" is missing",cfgIt->first));
-            configured = false;
+            std::cout << std::format("Missing config parameter {}\n",cfgIt->first);
         } else if (cfgIt->second.required == false && varIt == variables_.end()){
             continue;
         } else build_config(cfgIt,varIt);
     }
-    return configured;
 }
 
 void Interpreter::eval_config(const std::shared_ptr<ASTBlock>& block){
     eval_config_map(block->entries);
-
+    required_config_parameteters_in();
 }
-

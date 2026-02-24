@@ -66,6 +66,7 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
             }
 
             feeder_.loadBars(ticker,multiplier,from,to,timespan);
+            dataMap_.merge(std::move(feeder_.dataMapVec));
         }
     }
 }
@@ -78,7 +79,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
         auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Conditions"]);
 
         // ==== Create visitor to get callable type ==== //
-        ExecutionContext ctx{variables_, data_, functionMap};
+        ExecutionContext ctx{variables_, data_, dataMap_,functionMap};
         Visitor visitor(ctx);
 
         // ==== Recursive propagation through all childs ==== //
@@ -135,7 +136,7 @@ void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
     g_logger.report(std::string("Indicator interpreter is launched."));
 
     // ==== Evaluates indicator section and expands indicator section ==== //
-    ExecutionContext ctx{variables_, data_, functionMap};
+    ExecutionContext ctx{variables_, data_, dataMap_, functionMap};
     for (auto& [key,assignment] : block->entries){
         g_logger.report(std::string("Indicator found: " + key));
 
@@ -169,13 +170,21 @@ void Interpreter::eval_program(const std::shared_ptr<ASTRoot>& root){
 
     // ==== Cast general purpose objects into their specific substructs ==== //
     if (root->config.has_value()) {
+        g_logger.report("Config interpretation has started...");
         auto config_block = std::dynamic_pointer_cast<ASTBlock>(root->config.value());
         eval_config(config_block);
     }
 
     if (root->data) {
+        g_logger.report("Data fetching has started...");
         auto data_block = std::dynamic_pointer_cast<ASTList>(root->data);
         eval_data(data_block);
+    }
+
+    if (root->strategy){
+        g_logger.report("Strategy interpretation has started...");
+        auto strategy_block = std::dynamic_pointer_cast<Strategy>(root->strategy);
+        eval_strategy(strategy_block);
     }
 };
 // ====================================================== //
@@ -198,8 +207,7 @@ void Interpreter::eval_strategy(const std::shared_ptr<Strategy>& strategy){
         if (auto block_node = std::dynamic_pointer_cast<ASTBlock>(block)){
             auto type = block_node->block_type.value();
             auto it = strategy_blocks.find(type);
-            std::cout << "Interpretation f " << to_string(type) << std::endl;
-            std::cout << "sdqsdsqd of " << to_string(type) << std::endl;
+
             if (it!=strategy_blocks.end()){
                 it->second(block_node);
             }
@@ -249,6 +257,10 @@ void Interpreter::eval_parameters(const std::shared_ptr<ASTBlock>& block){
 
 std::unordered_map<std::string,AnyValue>& Interpreter::get_variables() {
     return variables_;
+}
+
+std::unordered_map<std::string,AnyValue>& Interpreter::get_data() {
+    return feeder_.dataMapVec;
 }
 
 std::unordered_map<std::string,bool> Interpreter::get_flags(){

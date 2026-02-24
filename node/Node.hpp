@@ -19,6 +19,7 @@ AnyValue compare_vectors_values(AnyValue& left, AnyValue& right, const std::stri
 struct ExecutionContext {
     std::unordered_map<std::string, AnyValue>& variables;
     std::unordered_map<std::string, AnyValue>& data;
+    std::unordered_map<std::string, AnyValue>& dataMap;
     std::unordered_map<std::string, taFunctionCall>& functionMapper;
 };
 
@@ -232,7 +233,7 @@ struct ASTRoot : public ASTNode {
 struct ASTArithmetics : ASTNode{
     std::shared_ptr<ASTNode> left;
     std::shared_ptr<ASTNode> right;
-    std::string op; /// ---------- WANR TOKN HEREEEEE
+    std::string op;
     Origin origin_op;
 
     AnyValue accept(Visitor& visitor);

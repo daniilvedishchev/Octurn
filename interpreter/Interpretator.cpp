@@ -143,7 +143,6 @@ void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
         // ==== Loop through all key-value pair ==== //
         if (auto assign_node = std::dynamic_pointer_cast<ASTAssignment>(assignment)){
             // ==== If corresponding value is function call ==== //
-            std::cout<<key<<"\n";
             auto function_node = std::dynamic_pointer_cast<ASTFunctionCall>(assign_node->expr);
             if (function_node){
                 function_node->ctx = &ctx;
@@ -234,17 +233,7 @@ void Interpreter::eval_parameters(const std::shared_ptr<ASTBlock>& block){
 
     // ==== Evaluates parameter section and expands variable section ==== //
     for (auto& [key,value] : block->entries){
-        // ==== Loop through all key-value pair ==== //
-        if (auto node_value = std::dynamic_pointer_cast<ASTValueNode>(value)){
-            // ==== If corresponding value is double ==== //
-            if (std::holds_alternative<double>(node_value->value)) {
-                variables_[key] = std::get<double>(node_value->value);
-            }
-            // ==== If corresponding value is boolean ==== //
-            else if (std::holds_alternative<bool>(node_value->value)) {
-                flags_[key] = std::get<bool>(node_value->value);
-            }
-        }
+        apply_kv(key, value, false);
     }
 }
 // ====================================================== //
@@ -274,36 +263,30 @@ std::unordered_map<std::string,bool> Interpreter::get_flags(){
 //                   Evaluate Config Map
 // - Helper function for evaluate parameters
 // ====================================================== //
-void Interpreter::eval_config_map(const NodeMap& map){
-
-    // ====================================== //
-    // If value is double -> put this in variable section
-    // If value is bool -> put this in flag section
-    // ====================================== //
-
-    // Value in map could contain children map so it's treated as block //
-    for (auto& [key, node_value] : map) {
-
-        if (auto value = std::dynamic_pointer_cast<ASTValueNode>(node_value)) {
-
-            if (std::holds_alternative<double>(value->value)) {
-
-                variables_[key] = std::get<double>(value->value);
-            }
-            else if (std::holds_alternative<bool>(value->value)) {
-                flags_[key] = std::get<bool>(value->value);
-            }
-            else if (std::holds_alternative<NodeMap>(value->value)) {
-                eval_config_map(std::get<NodeMap>(value->value));
-            }
-
-        } else if (auto block = std::dynamic_pointer_cast<ASTBlock>(node_value)) {
+void Interpreter::apply_kv(const std::string& key, const std::shared_ptr<ASTNode>& node, bool allow_nested){
+    if (auto value = std::dynamic_pointer_cast<ASTValueNode>(node)) {
+        if (std::holds_alternative<double>(value->value)) {
+            variables_[key] = std::get<double>(value->value);
+        } else if (std::holds_alternative<bool>(value->value)) {
+            flags_[key] = std::get<bool>(value->value);
+        } else if (allow_nested && std::holds_alternative<NodeMap>(value->value)) {
+            eval_config_map(std::get<NodeMap>(value->value));
+        }
+    } else if (allow_nested) {
+        if (auto block = std::dynamic_pointer_cast<ASTBlock>(node)) {
             eval_config_map(block->entries);
         }
     }
 }
-// ALL OTHER VARIABLES NOT MEETING CONDITIONS FOR CONFIG BLOCK WILL BE DELETED!!!!!
-// PS make variables section for each block!!!!
+
+void Interpreter::eval_config_map(const NodeMap& map){
+    // Value in map could contain children map so it's treated as block //
+    for (auto& [key, node_value] : map) {
+        apply_kv(key, node_value, true);
+    }
+}
+
+
 void Interpreter::build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
 std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt){
     std::string error;
@@ -319,7 +302,6 @@ void Interpreter::required_config_parameteters_in(){
         // if required and not in the variable section -> throw
         if (cfgIt->second.required == true && varIt == variables_.end()){
             std::runtime_error(std::format("Required config parameter \"{}\" is missing",cfgIt->first));
-            std::cout << std::format("Missing config parameter {}\n",cfgIt->first);
         } else if (cfgIt->second.required == false && varIt == variables_.end()){
             continue;
         } else build_config(cfgIt,varIt);

@@ -48,6 +48,7 @@ class Interpreter {
         bool eval_condition(const std::shared_ptr<ASTNode>& node);
         void execute_action(const std::shared_ptr<ASTAction>& action);
         void eval_config_map(const NodeMap& map);
+        void apply_kv(const std::string& key, const std::shared_ptr<ASTNode>& node, bool allow_nested);
         void build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
         std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt);
         void required_config_parameteters_in();

@@ -28,6 +28,7 @@ class Interpreter {
 
         // ========== Getters for variables and flags =========== //
         std::unordered_map<std::string,AnyValue>& get_variables();
+        std::unordered_map<std::string,AnyValue>& get_data();
         std::unordered_map<std::string,bool> get_flags();
         // ====================================================== //
 
@@ -61,6 +62,7 @@ class Interpreter {
         std::shared_ptr<ASTNode> root_;
         std::unordered_map<std::string,AnyValue> variables_;
         std::unordered_map<std::string,bool> flags_;
+        std::unordered_map<std::string, AnyValue> dataMap_;
 
         polygonDataFeed feeder_;
 
@@ -68,4 +70,5 @@ class Interpreter {
         config cfg_;
         std::unordered_map<std::string,AnyValue> parameters_;
         std::unordered_map<std::string, AnyValue> data_;
+        
 };

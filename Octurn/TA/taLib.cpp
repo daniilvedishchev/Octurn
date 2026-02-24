@@ -25,7 +25,7 @@
 // ================================================================================== //
 
 std::vector<double> MA(const multiValue& args,
-                       std::unordered_map<std::string, AnyValue>& variables_) 
+                       std::unordered_map<std::string, AnyValue>& variables_,std::unordered_map<std::string, AnyValue>& data_) 
 {
     std::vector<double> result;
 
@@ -43,7 +43,7 @@ std::vector<double> MA(const multiValue& args,
     if (std::holds_alternative<std::string>(args[0])) {
         // args[0] is the name of a data series in `data`
         series_name = std::get<std::string>(args[0]);
-        series      = std::get<std::vector<double>>(variables_[series_name]);
+        series      = std::get<std::vector<double>>(data_[series_name]);
     } else {
         // args[0] is already a vector<double>
         series = std::get<std::vector<double>>(args[0]);
@@ -63,8 +63,7 @@ std::vector<double> MA(const multiValue& args,
     }
 
     // --- 4. Validate period and data size --- //
-    std::cout<<typeid(period).name()<<"\n";
-    std::cout<<series.size()<<"\n";
+
     if (period <= 0.0 || series.size() < static_cast<std::size_t>(period)) {
         throw std::runtime_error("MA: incorrect data or period used to calculate MA.");
     }
@@ -107,103 +106,104 @@ std::vector<double> MA(const multiValue& args,
 // @return std::vector<double> of the same size as the input price vector.
 //         Values range from 0 to 100. Early values before the period are NaN.
 // ================================================================================== //
-// std::vector<double> RSI(const multiValue& args, std::unordered_map<std::string, AnyValue>& data,
-//                         const std::unordered_map<std::string, AnyValue>& variables_) 
-// {
-//     // --- 1. Extract and validate inputs --- //
+std::vector<double> RSI(const multiValue& args,
+                        std::unordered_map<std::string, AnyValue>& variables_,std::unordered_map<std::string, AnyValue>& data_) 
+{
+    // --- 1. Extract and validate inputs --- //
 
-//     // 1.1 Get series name from args[0] (must be a string)
-//     const auto* series_name_ptr = std::get_if<std::string>(&args[0]);
-//     if (!series_name_ptr) {
-//         throw std::runtime_error("RSI: first argument must be a string with series name.");
-//     }
+    // 1.1 Get series name from args[0] (must be a string)
+    const auto* series_name_ptr = std::get_if<std::string>(&args[0]);
+    if (!series_name_ptr) {
+        throw std::runtime_error("RSI: first argument must be a string with series name.");
+    }
 
-//     // 1.2 Look up the series in the variables_ map
-//     auto it = variables_.find(*series_name_ptr);
-//     if (it == variables_.end()) {
-//         throw std::runtime_error("RSI: variable passed to the function is not defined.");
-//     }
+    // 1.2 Look up the series in the variables_ map
+    auto it = data_.find(*series_name_ptr);
+    if (it == data_.end()) {
+        std::cout<<*series_name_ptr<<"\n";
+        throw std::runtime_error("RSI: variable passed to the function is not defined.");
+    }
 
-//     // 1.3 Extract the price vector (std::vector<double>) from AnyValue
-//     const auto* data_ptr = std::get_if<std::vector<double>>(&it->second);
-//     if (!data_ptr) {
-//         throw std::runtime_error("RSI: variable must be a std::vector<double>.");
-//     }
-//     const auto& data = *data_ptr;
+    // 1.3 Extract the price vector (std::vector<double>) from AnyValue
+    const auto* data_ptr = std::get_if<std::vector<double>>(&it->second);
+    if (!data_ptr) {
+        throw std::runtime_error("RSI: variable must be a std::vector<double>.");
+    }
+    const auto& data = *data_ptr;
 
-//     // 1.4 Extract the period from args[1] (must be a double)
-//     const auto* period_double_ptr = std::get_if<double>(&args[1]);
-//     if (!period_double_ptr) {
-//         throw std::runtime_error("RSI: second argument must be a number (double) for period.");
-//     }
+    // 1.4 Extract the period from args[1] (must be a double)
+    const auto* period_double_ptr = std::get_if<double>(&args[1]);
+    if (!period_double_ptr) {
+        throw std::runtime_error("RSI: second argument must be a number (double) for period.");
+    }
 
-//     if (*period_double_ptr <= 0.0) {
-//         throw std::runtime_error("RSI: period must be a positive number.");
-//     }
+    if (*period_double_ptr <= 0.0) {
+        throw std::runtime_error("RSI: period must be a positive number.");
+    }
 
-//     std::size_t period = static_cast<std::size_t>(*period_double_ptr);
-//     if (period < 1 || period >= data.size()) {
-//         std::cout << "period:" << period << "data-size:" << data.size() << "\n";
-//         throw std::runtime_error("RSI: period must be >= 1 and < data size.");
-//     }
+    std::size_t period = static_cast<std::size_t>(*period_double_ptr);
+    if (period < 1 || period >= data.size()) {
+        std::cout << "period:" << period << "data-size:" << data.size() << "\n";
+        throw std::runtime_error("RSI: period must be >= 1 and < data size.");
+    }
 
-//     // --- 2. Prepare output vector --- //
+    // --- 2. Prepare output vector --- //
 
-//     std::size_t n = data.size();
-//     // Initialize RSI with NaN, since the first 'period' values are not fully defined
-//     std::vector<double> rsi(n, std::numeric_limits<double>::quiet_NaN());
+    std::size_t n = data.size();
+    // Initialize RSI with NaN, since the first 'period' values are not fully defined
+    std::vector<double> rsi(n, std::numeric_limits<double>::quiet_NaN());
 
-//     // --- 3. Initial average gain and loss over the first 'period' bars --- //
+    // --- 3. Initial average gain and loss over the first 'period' bars --- //
 
-//     double gain_sum = 0.0;
-//     double loss_sum = 0.0;
+    double gain_sum = 0.0;
+    double loss_sum = 0.0;
 
-//     // Start from i = 1 because we use data[i] - data[i-1]
-//     for (std::size_t i = 1; i <= period; ++i) {
-//         double difference = data[i] - data[i - 1];
-//         if (difference > 0.0) {
-//             gain_sum += difference;              // upward move
-//         } else {
-//             loss_sum += std::abs(difference);    // downward move
-//         }
-//     }
+    // Start from i = 1 because we use data[i] - data[i-1]
+    for (std::size_t i = 1; i <= period; ++i) {
+        double difference = data[i] - data[i - 1];
+        if (difference > 0.0) {
+            gain_sum += difference;              // upward move
+        } else {
+            loss_sum += std::abs(difference);    // downward move
+        }
+    }
 
-//     double inv_period = 1.0 / static_cast<double>(period);
+    double inv_period = 1.0 / static_cast<double>(period);
 
-//     double avg_gain = gain_sum * inv_period;
-//     double avg_loss = loss_sum * inv_period;
+    double avg_gain = gain_sum * inv_period;
+    double avg_loss = loss_sum * inv_period;
 
-//     // Helper lambda to transform (avg_gain, avg_loss) into RSI value
-//     auto compute_rsi = [](double avg_gain, double avg_loss) -> double {
-//         // If there is no average loss:
-//         if (avg_loss == 0.0) {
-//             if (avg_gain == 0.0) return 50.0; // flat market: no gains, no losses
-//             return 100.0;                     // only gains: RSI at 100
-//         }
+    // Helper lambda to transform (avg_gain, avg_loss) into RSI value
+    auto compute_rsi = [](double avg_gain, double avg_loss) -> double {
+        // If there is no average loss:
+        if (avg_loss == 0.0) {
+            if (avg_gain == 0.0) return 50.0; // flat market: no gains, no losses
+            return 100.0;                     // only gains: RSI at 100
+        }
 
-//         double RS = avg_gain / avg_loss;
-//         return 100.0 - (100.0 / (1.0 + RS));
-//     };
+        double RS = avg_gain / avg_loss;
+        return 100.0 - (100.0 / (1.0 + RS));
+    };
 
-//     // First "valid" RSI value is at index = period
-//     rsi[period] = compute_rsi(avg_gain, avg_loss);
+    // First "valid" RSI value is at index = period
+    rsi[period] = compute_rsi(avg_gain, avg_loss);
 
-//     // --- 4. Wilder's smoothing for the remaining bars --- //
+    // --- 4. Wilder's smoothing for the remaining bars --- //
 
-//     for (std::size_t i = period + 1; i < n; ++i) {
-//         double change = data[i] - data[i - 1];
+    for (std::size_t i = period + 1; i < n; ++i) {
+        double change = data[i] - data[i - 1];
 
-//         // Split the price change into gain or loss
-//         double gain = (change > 0.0) ? change : 0.0;
-//         double loss = (change < 0.0) ? -change : 0.0;
+        // Split the price change into gain or loss
+        double gain = (change > 0.0) ? change : 0.0;
+        double loss = (change < 0.0) ? -change : 0.0;
 
-//         // Wilder's smoothing:
-//         // avg_new = (avg_prev * (period - 1) + current_gain_or_loss) / period
-//         avg_gain = (avg_gain * (period - 1) + gain) * inv_period;
-//         avg_loss = (avg_loss * (period - 1) + loss) * inv_period;
+        // Wilder's smoothing:
+        // avg_new = (avg_prev * (period - 1) + current_gain_or_loss) / period
+        avg_gain = (avg_gain * (period - 1) + gain) * inv_period;
+        avg_loss = (avg_loss * (period - 1) + loss) * inv_period;
 
-//         rsi[i] = compute_rsi(avg_gain, avg_loss);
-//     }
+        rsi[i] = compute_rsi(avg_gain, avg_loss);
+    }
 
-//     return rsi;
-// }
+    return rsi;
+}

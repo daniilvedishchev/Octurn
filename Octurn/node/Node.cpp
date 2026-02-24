@@ -94,7 +94,7 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
     std::vector<double> output;
 
     try {
-        output = it->second(args, variables_);
+        output = it->second(args, variables_,ctx->dataMap);
     } catch (const std::exception& e) {
         std::cout << "First variable:" << variables_.begin()->first << "\n";
         std::cerr << "TA func " << name << " failed: " << e.what() << "\n";

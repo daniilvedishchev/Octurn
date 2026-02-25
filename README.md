@@ -1,79 +1,53 @@
-# Octurn
+```latex
+\section*{Octurn}
 
-Octurn is a C++20 trading-strategy DSL and backtesting core with a WebAssembly-friendly runtime and a pluggable market-data pipeline.
+\textbf{Octurn} is a high‑performance C++20 core for trading strategies with a concise DSL, backtesting, and a pluggable market‑data pipeline. It is built to shorten the path from idea to verified strategy: minimal syntax, fast runtime, and a clean architecture.
 
-## Highlights
-- Small, readable DSL for strategy definition (data, parameters, indicators, entry/exit)
-- Built-in technical indicators (MA, RSI)
-- Vectorized math and boolean logic on time series
-- Async data flow for browser/WASM runtimes
-- Easy extension points for new indicators and operators
+\subsection*{Why Octurn}
+\begin{itemize}
+  \item \textbf{Expressive DSL}: describe data, parameters, indicators, and entry/exit rules in a few lines.
+  \item \textbf{Speed and determinism}: C++20 core with vectorized operations over time series.
+  \item \textbf{Flexible data integration}: pluggable sources with a ready Polygon API connector.
+  \item \textbf{Extensible by design}: add your own indicators and operators easily.
+  \item \textbf{Automation‑ready}: HTTP API (Drogon) and RabbitMQ scaffolding for queues.
+  \item \textbf{WASM‑friendly}: runtime architecture prepared for WebAssembly environments.
+\end{itemize}
 
-## DSL at a glance
-Keywords are lowercase. Data values like tickers and timespans are identifiers.
+\subsection*{What’s inside}
+\begin{itemize}
+  \item \texttt{lexer / parser / AST / interpreter} — complete DSL pipeline.
+  \item \texttt{TA} — indicator implementations (\texttt{MA}, \texttt{RSI}).
+  \item \texttt{mappers} — function registry for custom indicators.
+  \item \texttt{src/polygon} — client and OHLC data loader.
+  \item \texttt{my\_api} — HTTP endpoint \texttt{/backtest} and queue infrastructure.
+\end{itemize}
 
-```text
+\subsection*{DSL quick example}
+\begin{verbatim}
+config { equity: 100 positionSize: 1 slippageBps: 10 }
 data [
-  { ticker: AAPL timespan: day multiplier: 1 from: 2024-01-01 to: 2024-03-01 }
+  { ticker: AAPL timespan: day multiplier: 1 from: 2025-09-01 to: 2025-10-27 }
 ]
-
-strategy simple_ma {
-  parameters { fast: 5 slow: 30 }
-  indicators {
-    fast_ma = MA(AAPL_close, fast)
-    slow_ma = MA(AAPL_close, slow)
-  }
-  entry { when fast_ma > slow_ma }
+strategy SimpleMA {
+  parameters { fast_ma: 5 slow_ma: 30 }
+  indicators { RSI1 = RSI(AAPL_close, 12) }
+  entry { when RSI1 > 50 }
 }
+\end{verbatim}
+
+\subsection*{Build (core/CLI)}
+\begin{verbatim}
+cmake -S . -B build
+cmake --build build
+\end{verbatim}
+
+\subsection*{Dependencies}
+\begin{itemize}
+  \item Core: \texttt{cpr}, \texttt{nlohmann\_json}
+  \item API (optional): \texttt{Drogon}
+  \item Queues (optional): \texttt{SimpleAmqpClient}
+\end{itemize}
+
+\subsection*{Status}
+The core is ready for use and extension. The API and queue components are foundational scaffolding for production integrations.
 ```
-
-## C++ usage (core)
-```cpp
-std::string script = R"(
-  data [ { ticker: AAPL timespan: day multiplier: 1 from: 2024-01-01 to: 2024-03-01 } ]
-  strategy simple_ma {
-    parameters { fast: 5 slow: 30 }
-    indicators { fast_ma = MA(AAPL_close, fast) }
-    entry { when fast_ma > 0 }
-  }
-)";
-
-Lexer lexer(script);
-lexer.tokenize();
-
-Parser parser(lexer.get_tokens());
-auto root = parser.parse();
-
-Interpreter engine(root);
-engine.run();
-while (!engine.is_done()) {
-  engine.tick();
-}
-```
-
-## Data flow
-- The `data` block schedules OHLC fetches.
-- When data arrives, variables are populated as:
-  - `<ticker>_open`, `<ticker>_high`, `<ticker>_low`, `<ticker>_close`
-- Indicators consume these vectors directly.
-
-## Architecture
-- `Octurn/lexer` - tokenization and operators
-- `Octurn/parser` - AST construction
-- `Octurn/node` - AST nodes and evaluation
-- `Octurn/interpreter` - runtime and execution
-- `Octurn/TA` - indicator implementations
-- `Octurn/mappers` - function registry (indicator map)
-
-## Extending indicators
-1) Add the implementation in `Octurn/TA/taLib.cpp`
-2) Register it in `Octurn/mappers/maps.cpp`
-
-## Build notes
-- C++20 is required.
-- Native builds use `cpr` and `nlohmann_json`.
-- WASM builds rely on a JS bridge for data fetching. You can implement your own bridge by providing:
-  `request_ohlc`, `ohlc_ready`, and `get_ohlc` (see `polygon_wasm_bridge` in the full workspace).
-
-## Status
-This is the core engine. UI and JS bindings live outside this folder in the full workspace.

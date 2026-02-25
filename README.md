@@ -2,14 +2,6 @@
 
 Octurn is a high‑performance C++20 core for a trading‑strategy DSL with backtesting‑oriented evaluation, a pluggable market‑data pipeline, and an interpreter runtime. It’s built to shorten the path from idea to verified strategy with minimal syntax and a clean, extensible architecture.
 
-## Why Octurn
-- Expressive DSL for `config`, `data`, `parameters`, `indicators`, and `entry/exit` logic.
-- Vectorized math and boolean operations over time series.
-- Built‑in indicators (`MA`, `RSI`) and simple extension points.
-- Real market‑data connector (Polygon API) with OHLC series output.
-- Optional HTTP API (Drogon) and RabbitMQ scaffolding for automation.
-- WASM‑friendly runtime design.
-
 ## DSL Example
 ```text
 config { equity: 100 positionSize: 1 slippageBps: 10 }

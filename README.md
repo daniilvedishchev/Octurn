@@ -1,79 +1,126 @@
 # Octurn
 
-Octurn is a C++20 trading-strategy DSL and backtesting core with a WebAssembly-friendly runtime and a pluggable market-data pipeline.
+**Octurn** is a C++20 strategy engine and domain-specific language (DSL) for quantitative trading research.
 
-## Highlights
-- Small, readable DSL for strategy definition (data, parameters, indicators, entry/exit)
-- Built-in technical indicators (MA, RSI)
-- Vectorized math and boolean logic on time series
-- Async data flow for browser/WASM runtimes
-- Easy extension points for new indicators and operators
+It is designed to make strategies:
 
-## DSL at a glance
-Keywords are lowercase. Data values like tickers and timespans are identifiers.
+- **easy to express**
+- **easy to inspect**
+- **easy to test**
+- and eventually **easy to connect to execution systems**
 
-```text
+Octurn sits between raw market data and production trading infrastructure.  
+Its purpose is to reduce the gap between a trading idea and a strategy that can be evaluated, debugged, and later deployed.
+
+---
+
+## Why Octurn
+
+Most strategy workflows are still fragmented:
+
+- research logic is spread across scripts and notebooks,
+- indicators are hardcoded into application logic,
+- strategy rules are not portable,
+- and execution often depends on a completely separate stack.
+
+Octurn aims to solve this by providing:
+
+- a **compact DSL** for writing strategies,
+- a **native C++ engine** for evaluation and backtesting,
+- a **modular architecture** for parsing, interpreting, and extending strategy logic,
+- and a base for future **execution-layer integrations**.
+
+---
+
+## Core Idea
+
+Instead of writing strategy logic directly in large application codebases, Octurn lets you describe:
+
+- configuration,
+- data sources,
+- parameters,
+- indicators,
+- entry rules,
+- exit rules
+
+in a dedicated strategy language.
+
+That strategy is then interpreted by the engine and transformed into a structured runtime output.
+
+---
+
+## Example Strategy
+
+```octurn
+config {
+  equity: 100
+  positionSize: 1
+  slippageBps: 10
+}
+
 data [
-  { ticker: AAPL timespan: day multiplier: 1 from: 2024-01-01 to: 2024-03-01 }
+  { ticker: AAPL timespan: day multiplier: 1 from: 2025-09-01 to: 2025-10-27 },
+  { ticker: MSFT timespan: day multiplier: 1 from: 2025-08-01 to: 2025-10-27 }
 ]
 
-strategy simple_ma {
-  parameters { fast: 5 slow: 30 }
+strategy SimpleMA {
+  parameters {
+    fast_ma: 5
+    slow_ma: 30
+  }
+
   indicators {
-    fast_ma = MA(AAPL_close, fast)
-    slow_ma = MA(AAPL_close, slow)
+    RSI1 = RSI(AAPL_close, 12)
   }
-  entry { when fast_ma > slow_ma }
-}
-```
 
-## C++ usage (core)
-```cpp
-std::string script = R"(
-  data [ { ticker: AAPL timespan: day multiplier: 1 from: 2024-01-01 to: 2024-03-01 } ]
-  strategy simple_ma {
-    parameters { fast: 5 slow: 30 }
-    indicators { fast_ma = MA(AAPL_close, fast) }
-    entry { when fast_ma > 0 }
+  entry {
+    when RSI1 > 50
   }
-)";
 
-Lexer lexer(script);
-lexer.tokenize();
-
-Parser parser(lexer.get_tokens());
-auto root = parser.parse();
-
-Interpreter engine(root);
-engine.run();
-while (!engine.is_done()) {
-  engine.tick();
+  exit {
+    when RSI1 > 250
+  }
 }
-```
 
-## Data flow
-- The `data` block schedules OHLC fetches.
-- When data arrives, variables are populated as:
-  - `<ticker>_open`, `<ticker>_high`, `<ticker>_low`, `<ticker>_close`
-- Indicators consume these vectors directly.
+Octurn Runtime
+==============
 
-## Architecture
-- `lexer` - tokenization and operators
-- `parser` - AST construction
-- `node` - AST nodes and evaluation
-- `interpreter` - runtime and execution
-- `TA` - indicator implementations
-- `mappers` - function registry (indicator map)
+Config
+------
+equity        : 100
+positionSize  : 1
+slippageBps   : 10
 
-## Extending indicators
-1) Add the implementation in `ta/taLib.cpp`
-2) Register it in `mappers/maps.cpp`
+Data Sources
+------------
+- AAPL | timespan: day | multiplier: 1 | from: 2025-09-01 | to: 2025-10-27 | bars: 40
+- MSFT | timespan: day | multiplier: 1 | from: 2025-08-01 | to: 2025-10-27 | bars: 61
 
-## Build notes
-- C++20 is required.
-- Native builds use `cpr` and `nlohmann_json`.
-- WASM builds rely on a JS bridge for data fetching. You can implement your own bridge by providing:
-  `request_ohlc`, `ohlc_ready`, and `get_ohlc` (see `polygon_wasm_bridge` in the full workspace).
+Strategy
+--------
+name          : SimpleMA
+parameters    : fast_ma = 5, slow_ma = 30
 
-## Status
-This is the core engine. UI and JS bindings live outside this folder in the full workspace.
+Indicators
+----------
+RSI1          : length = 40
+RSI1 head     : [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+RSI1 tail     : [49.031561, 51.622211, 48.391995, 56.071202, 67.062637, 67.534664, 59.901390, 61.154273, 64.612738, 69.999618]
+
+Signals
+-------
+Entry true at indices : [12..27, 31, 33..39]
+Exit true at indices  : []
+
+Entry count           : 23
+Exit count            : 0
+
+Materialized Series
+-------------------
+AAPL_open, AAPL_high, AAPL_low, AAPL_close, AAPL_volume, AAPL_timestamp
+MSFT_open, MSFT_high, MSFT_low, MSFT_close, MSFT_volume, MSFT_timestamp
+
+Flags
+-----
+Entry  : [false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, true, false, true, true, true, true, true, true, true]
+Exit   : [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]

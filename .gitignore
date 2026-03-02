@@ -1,13 +1,11 @@
-cat <<'EOF' > /Users/kodalir/Kayiros/.gitignore
 # CMake/build
-/build/
-/build-ems/
-/build-native/
-/Octurn/build/
-/CMakeFiles/
-/CMakeCache.txt
-/cmake_install.cmake
-/Makefile
+build/
+build-*/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+/logs.txt
+
 
 # IDE
 /.vscode/
@@ -20,4 +18,3 @@ cat <<'EOF' > /Users/kodalir/Kayiros/.gitignore
 # Env
 .env
 .env.*
-EOF

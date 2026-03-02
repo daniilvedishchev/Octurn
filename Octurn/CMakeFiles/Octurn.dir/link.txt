@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/Octurn.dir/main.cpp.o -o Octurn  -Wl,-rpath,/opt/homebrew/lib libocturn_core.a /opt/homebrew/lib/libcpr.1.12.0.dylib /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/libcurl.tbd

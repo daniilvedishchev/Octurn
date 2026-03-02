@@ -11,21 +11,20 @@ find_package(nlohmann_json REQUIRED)
 
 # ---- CORE ---- #
 add_library(octurn_core STATIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/node/Node.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/parser/Parser.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/lexer/Lexer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/interpreter/Interpretator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/utils/Utils.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/log/logHandler.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/TA/taLib.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/mappers/maps.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/config/cfgTemp.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/src/polygon/polygonClient.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn/src/polygon/polygonDataFeed.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/node/Node.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/parser/Parser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lexer/Lexer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/Interpretator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/Utils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/log/logHandler.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/TA/taLib.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/mappers/maps.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/cfgTemp.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonClient.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonDataFeed.cpp
 )
   
 target_include_directories(octurn_core PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/Octurn
   ${CMAKE_CURRENT_SOURCE_DIR}
   "/opt/homebrew/include"
 )

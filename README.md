@@ -58,16 +58,16 @@ while (!engine.is_done()) {
 - Indicators consume these vectors directly.
 
 ## Architecture
-- `Octurn/lexer` - tokenization and operators
-- `Octurn/parser` - AST construction
-- `Octurn/node` - AST nodes and evaluation
-- `Octurn/interpreter` - runtime and execution
-- `Octurn/TA` - indicator implementations
-- `Octurn/mappers` - function registry (indicator map)
+- `lexer` - tokenization and operators
+- `parser` - AST construction
+- `node` - AST nodes and evaluation
+- `interpreter` - runtime and execution
+- `TA` - indicator implementations
+- `mappers` - function registry (indicator map)
 
 ## Extending indicators
-1) Add the implementation in `Octurn/TA/taLib.cpp`
-2) Register it in `Octurn/mappers/maps.cpp`
+1) Add the implementation in `TA/taLib.cpp`
+2) Register it in `mappers/maps.cpp`
 
 ## Build notes
 - C++20 is required.

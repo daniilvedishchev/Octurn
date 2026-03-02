@@ -1,0 +1,4 @@
+/Users/kodalir/Kayiros/Octurn/CMakeFiles/octurn_core.dir
+/Users/kodalir/Kayiros/Octurn/CMakeFiles/Octurn.dir
+/Users/kodalir/Kayiros/Octurn/CMakeFiles/edit_cache.dir
+/Users/kodalir/Kayiros/Octurn/CMakeFiles/rebuild_cache.dir

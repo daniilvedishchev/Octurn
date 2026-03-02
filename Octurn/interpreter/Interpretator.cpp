@@ -31,6 +31,9 @@ Interpreter::Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder)
         }},
         { Tokentype::Entry, [this](const std::shared_ptr<ASTBlock>& block) {
             this->eval_entry(block);
+        }},
+        { Tokentype::Exit, [this](const std::shared_ptr<ASTBlock>& block) {
+            this->eval_exit(block);
         }}
     };
 }
@@ -73,10 +76,11 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
 
 AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
     g_logger.report("Interpretation of entry block has started.");
+    std::cout<<"Interpretation of entry block has started."<<"\n";
     if (block->block_type == Tokentype::Entry){
 
         // ==== Start to interpret conditions ==== //
-        auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Conditions"]);
+        auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Entry"]);
 
         // ==== Create visitor to get callable type ==== //
         ExecutionContext ctx{variables_, data_, dataMap_,functionMap};
@@ -88,7 +92,27 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
 
         return evaluated_expression;
     } else throw std::runtime_error("\"Entry\" block is not defined!");
-    
+}
+
+AnyValue Interpreter::eval_exit(const std::shared_ptr<ASTBlock>& block){
+    g_logger.report("Interpretation of exit block has started.");
+    std::cout<<"Interpretation of exit block has started."<<"\n";
+    if (block->block_type == Tokentype::Exit){
+        std::cout<<"Interpreting exit"<<"\n";
+
+        // ==== Start to interpret conditions ==== //
+        auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Exit"]);
+
+        // ==== Create visitor to get callable type ==== //
+        ExecutionContext ctx{variables_, data_, dataMap_,functionMap};
+        Visitor visitor(ctx);
+
+        // ==== Recursive propagation through all childs ==== //
+        auto evaluated_expression = condition->accept(visitor);
+        variables_["Exit"] = evaluated_expression;
+
+        return evaluated_expression;
+    } else throw std::runtime_error("\"Exit\" block is not defined!");
 }
 
 // ====================================================== //
@@ -206,6 +230,7 @@ void Interpreter::eval_strategy(const std::shared_ptr<Strategy>& strategy){
         if (auto block_node = std::dynamic_pointer_cast<ASTBlock>(block)){
             auto type = block_node->block_type.value();
             auto it = strategy_blocks.find(type);
+            std::cout<<"Next to Interpret:"<<to_string(type)<<"\n";
 
             if (it!=strategy_blocks.end()){
                 it->second(block_node);

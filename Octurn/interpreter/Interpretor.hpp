@@ -41,6 +41,7 @@ class Interpreter {
         void eval_data(const std::shared_ptr<ASTList>& list);
 
         AnyValue eval_entry(const std::shared_ptr<ASTBlock>& block);
+        AnyValue eval_exit(const std::shared_ptr<ASTBlock>& block);
 
         // =============== Principal evaluators END =============== // 
 

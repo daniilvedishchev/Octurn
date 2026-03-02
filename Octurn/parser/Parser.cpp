@@ -542,9 +542,20 @@ std::shared_ptr<ASTNode> Parser::parse_block_entry_exit(Tokentype blockType) {
         if (match(Tokentype::When)) {
 
             consume_token(Tokentype::When);
-            std::cout<<"Started parsing condition ate 'When'"<<"\n";
-            block->block_type = Tokentype::Entry;
-            block->entries["Conditions"] = parse_expression();
+
+            block->block_type = blockType;
+
+            if (blockType == Tokentype::Entry) {
+
+                block->entries["Entry"] = parse_expression();
+                g_logger.report("Entry is parsed!");
+            };
+
+            if (blockType == Tokentype::Exit){
+                block->entries["Exit"] = parse_expression();
+                g_logger.report("Exit is parsed!");
+            };
+
             g_logger.report("Conditions are parsed!");
 
             // consume_token(Tokentype::LeftBrace);

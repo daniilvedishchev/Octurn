@@ -18,7 +18,6 @@ void polygonDataFeed::loadBars(const std::string& ticker,int multiplier,const st
     timestamp.reserve(n);
 
     for (const auto& bar : json["results"]) {
-        std::cout<<"Getting values"<<bar["o"]<<"\n";
         open.emplace_back(bar["o"].get<double>());
         high.emplace_back(bar["h"].get<double>());
         low.emplace_back(bar["l"].get<double>());

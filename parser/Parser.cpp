@@ -3,7 +3,6 @@
 #include "utils/Utils.hpp"
 #include <stdexcept>
 #include <format>
-#include <iostream>
 #include "log/logHandler.hpp"
 #include <string>
 
@@ -59,7 +58,6 @@ bool Parser::match(Tokentype type) const {
 
 
 void Parser::consume_token(Tokentype type) {
-    std::cout<<std::format("Consumed+{}+{}",to_string(type),current_token().value)<<"\n";
     if (pos_ < tokens_.size() && match(type)) {
         ++pos_;
     } else {
@@ -83,7 +81,6 @@ void Parser::parse_key_value(std::string& key, NodeMap& map) {
         assign_value(str_to_bool(current_token().value));
         consume_token(current_token().token_type);
     } else if (match(Tokentype::Identifier) && SpecialTypes.contains(key)){
-        std::cout<<std::format("key (special):{}->{}",key,current_token().value)<<"\n";
 
         assign_value(current_token().value);
         consume_token(Tokentype::Identifier);
@@ -328,7 +325,6 @@ std::shared_ptr<ASTNode> Parser::parse_arithmetics(){
             current_token().operator_type == OperatorType::Multiply ||
             current_token().operator_type == OperatorType::Divide)) {
                 
-            std::cout<<"Currently parsing arithmetics"<<"\n";
             update_node<ASTArithmetics>(left, [&]() {
                 return parse_factor();
             });
@@ -472,7 +468,6 @@ std::shared_ptr<Strategy> Parser::append_strategy_blocks() {
         }
     }
     for (auto& block :seen_types){
-        std::cout<<to_string(block)<<"\n";
     }
 
     // Ensure that all required blocks exist
@@ -490,7 +485,6 @@ bool Parser::required_blocks_in(const std::unordered_set<Tokentype>& types){
     for (auto block : to_find) {
         if (!types.count(block)) {
             authorized_exec = false;
-            std::cout<<"error is here"<<"\n";
             throw std::runtime_error(std::format("Missing {} block.", to_string(block)));
         }
     }
@@ -650,7 +644,6 @@ std::shared_ptr<ASTNode> Parser::parse() {
     auto it = block_parsers.find(current_token().token_type);
     
     while (pos_ < tokens_.size()) {
-        std::cout<<current_token().value<<"\n";
         if (match(Tokentype::Config)){
             exec_config_parser(root);
         }else if (match(Tokentype::Data)){

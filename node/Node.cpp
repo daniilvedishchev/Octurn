@@ -72,7 +72,6 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
         }
         // ==== If nested function -> recursively evaluate it ==== //
         else if (auto val_node = std::dynamic_pointer_cast<ASTFunctionCall>(arg)){
-            std::cout<<"Function call in a function"<<"\n";
 
             if (!val_node->ctx){
                 val_node->ctx = ctx;
@@ -85,7 +84,6 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
 
     auto name = func_node->name;
     g_logger.report("Evaluating function: "+name);
-    std::cout<<"Looking for a func "+name<<"\n";
 
     auto it = ctx->functionMapper.find(name);
     auto& variables_ = ctx->variables;
@@ -96,7 +94,6 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
     try {
         output = it->second(args, variables_,ctx->dataMap);
     } catch (const std::exception& e) {
-        std::cout << "First variable:" << variables_.begin()->first << "\n";
         std::cerr << "TA func " << name << " failed: " << e.what() << "\n";
         throw;
     } catch (...) {

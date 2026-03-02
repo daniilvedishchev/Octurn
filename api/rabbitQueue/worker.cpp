@@ -1,5 +1,5 @@
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
-#include <iostream>
+#include "log/logHandler.hpp"
 #include "worker.h"
 
 Worker::Worker(AmqpClient::Channel::ptr_t channel_ptr) : channel_(std::move(channel_ptr)){}
@@ -13,7 +13,7 @@ void Worker::consume_message(){
             AmqpClient::Envelope::ptr_t envelope = channel_->BasicConsumeMessage(consumer_tag);
             std::string message = envelope->Message()->Body();
 
-            std::cout << "[x] Received: " << message << std::endl;
+            g_logger.report(std::string("[x] Received: ") + message);
 
             // Тут можно сделать обработку, например вызвать функцию бэктеста
         }

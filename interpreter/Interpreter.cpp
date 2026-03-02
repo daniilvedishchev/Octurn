@@ -1,7 +1,6 @@
 #include "Interpreter.hpp"
 #include "utils/Utils.hpp"
 #include "log/logHandler.hpp"
-#include <iostream>
 #include <numeric>
 #include <string>
 #include <regex>
@@ -76,7 +75,6 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
 
 AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
     g_logger.report("Interpretation of entry block has started.");
-    std::cout<<"Interpretation of entry block has started."<<"\n";
     if (block->block_type == Tokentype::Entry){
 
         // ==== Start to interpret conditions ==== //
@@ -96,9 +94,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
 
 AnyValue Interpreter::eval_exit(const std::shared_ptr<ASTBlock>& block){
     g_logger.report("Interpretation of exit block has started.");
-    std::cout<<"Interpretation of exit block has started."<<"\n";
     if (block->block_type == Tokentype::Exit){
-        std::cout<<"Interpreting exit"<<"\n";
 
         // ==== Start to interpret conditions ==== //
         auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Exit"]);
@@ -175,7 +171,7 @@ void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
             }
         }
     }
-    std::cout<<"All indicators are evaluated"<<"\n";
+    g_logger.report("All indicators are evaluated.");
     return ;
 }
 // ====================================================== //
@@ -230,7 +226,7 @@ void Interpreter::eval_strategy(const std::shared_ptr<Strategy>& strategy){
         if (auto block_node = std::dynamic_pointer_cast<ASTBlock>(block)){
             auto type = block_node->block_type.value();
             auto it = strategy_blocks.find(type);
-            std::cout<<"Next to Interpret:"<<to_string(type)<<"\n";
+            g_logger.report(std::string("Executing strategy block: ") + to_string(type));
 
             if (it!=strategy_blocks.end()){
                 it->second(block_node);

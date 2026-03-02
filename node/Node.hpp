@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -253,7 +252,6 @@ struct Visitor {
         ExecutionContext& context;
 
         AnyValue visit(ASTArithmetics& node){
-            std::cout<<"Arithmetic node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             auto node_value = node.eval_node(left_value,right_value);
@@ -261,51 +259,42 @@ struct Visitor {
         }
 
         AnyValue visit(ASTValueNode& node){
-            std::cout<<"ASTVALUE node"<<"\n";
             node.ctx = &context;
             return node.eval_node(std::nullopt,std::nullopt,std::nullopt);
         }
 
         AnyValue visit(ASTAction& node){
-            std::cout<<"Action node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTCrosses& node){
-            std::cout<<"Crosses node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             return node.eval_node(left_value,right_value,std::nullopt);
         }
 
         AnyValue visit(ASTBlock& node){
-            std::cout<<"Block node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTList& node){
-            std::cout<<"List node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTRoot& node){
-            std::cout<<"Root node"<<"\n";
             return false;
         }
 
         AnyValue visit(Strategy& node){
-            std::cout<<"Strategy node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTAssignment& node){
-            std::cout<<"Assignment node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTFunctionCall& node){
 
-            std::cout<<"ASTFunctionCall node"<<"\n";
             std::shared_ptr<ASTFunctionCall> fn_ptr;
             node.ctx = &context;
 
@@ -318,33 +307,28 @@ struct Visitor {
         }
 
         AnyValue visit(ASTLogicalCondition& node){
-            std::cout<<"Logical node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             return node.eval_node(left_value,right_value,std::nullopt);
         }
 
         AnyValue visit(ASTExpression& node){
-            std::cout<<"Expression node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             return node.eval_node(left_value,right_value,std::nullopt);
         }
 
         AnyValue visit(ASTCondition& node){
-            std::cout<<"Condition node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             return node.eval_node(left_value,right_value,std::nullopt);
         }
 
         AnyValue visit(ASTTerm& node){
-            std::cout<<"Term node"<<"\n";
             return false;
         }
 
         AnyValue visit(ASTComparison& node){
-            std::cout<<"Comparison node"<<"\n";
             auto left_value = node.left->accept(*this);
             auto right_value = node.right->accept(*this);
             return node.eval_node(left_value,right_value,std::nullopt);

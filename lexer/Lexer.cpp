@@ -145,7 +145,6 @@ std::string Lexer::get_date() {
     if (std::regex_match(date,std::regex(R"(^\d{4}-\d{2}-\d{2}$)"))){
             colNum_ = tmp_colNum;
             pos_ = tmp_pos;
-            std::cout<<date<<"DATE PARSED\n";
             return date;
         }
     return "";
@@ -169,7 +168,6 @@ Token Lexer::next_token() {
         std::string symbol = get_word_or_symbol(); 
         auto it_operator_type = operators_.find(symbol);
         if (it_operator_type != operators_.end()) {
-            std::cout<<"Found operator:"<<symbol<<"\n";
             return {Tokentype::Operator, symbol, lineNum_, startCol, it_operator_type->second};
         }
     } else if (std::isalpha(c) || c == '_'){

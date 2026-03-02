@@ -1,6 +1,6 @@
 #include "taLib.hpp"
+#include "log/logHandler.hpp"
 #include <format>
-#include <iostream>
 
 // ================================================================================== //
 // All functions in this file:
@@ -59,7 +59,6 @@ std::vector<double> MA(const multiValue& args,
         // Period is stored in a variable, whose name is in args[1]
         const std::string& period_name = std::get<std::string>(args[1]);
         period = std::get<double>(variables_[period_name]);
-        std::cout << std::format("MA: period taken from variable: {}\n", std::to_string(period));
     }
 
     // --- 4. Validate period and data size --- //
@@ -92,7 +91,7 @@ std::vector<double> MA(const multiValue& args,
         result.push_back(sum / period);
     }
 
-    std::cout << "Successfully calculated MA\n";
+    g_logger.report(std::format("MA calculated (period={})", period));
     return result;
 }
 
@@ -120,7 +119,6 @@ std::vector<double> RSI(const multiValue& args,
     // 1.2 Look up the series in the variables_ map
     auto it = data_.find(*series_name_ptr);
     if (it == data_.end()) {
-        std::cout<<*series_name_ptr<<"\n";
         throw std::runtime_error("RSI: variable passed to the function is not defined.");
     }
 
@@ -143,7 +141,6 @@ std::vector<double> RSI(const multiValue& args,
 
     std::size_t period = static_cast<std::size_t>(*period_double_ptr);
     if (period < 1 || period >= data.size()) {
-        std::cout << "period:" << period << "data-size:" << data.size() << "\n";
         throw std::runtime_error("RSI: period must be >= 1 and < data size.");
     }
 
@@ -205,5 +202,6 @@ std::vector<double> RSI(const multiValue& args,
         rsi[i] = compute_rsi(avg_gain, avg_loss);
     }
 
+    g_logger.report(std::format("RSI calculated (period={})", period));
     return rsi;
 }

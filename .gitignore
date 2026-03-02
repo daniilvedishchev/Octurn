@@ -4,7 +4,9 @@ build-*/
 **/CMakeFiles/
 **/CMakeCache.txt
 **/cmake_install.cmake
-/logs.txt
+**/compile_commands.json
+**/logs.txt
+**/.DS_Store
 
 
 # IDE

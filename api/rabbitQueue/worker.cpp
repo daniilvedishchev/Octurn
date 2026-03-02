@@ -13,7 +13,7 @@ void Worker::consume_message(){
             AmqpClient::Envelope::ptr_t envelope = channel_->BasicConsumeMessage(consumer_tag);
             std::string message = envelope->Message()->Body();
 
-            g_logger.report(std::string("[x] Received: ") + message);
+            g_logger.report(std::string("[RABBIT] Received: ") + message);
 
             // Тут можно сделать обработку, например вызвать функцию бэктеста
         }

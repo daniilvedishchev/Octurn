@@ -74,7 +74,7 @@ void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
 }
 
 AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
-    g_logger.report("Interpretation of entry block has started.");
+    g_logger.report("[INTERPRETER] Entry evaluation started.");
     if (block->block_type == Tokentype::Entry){
 
         // ==== Start to interpret conditions ==== //
@@ -93,7 +93,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
 }
 
 AnyValue Interpreter::eval_exit(const std::shared_ptr<ASTBlock>& block){
-    g_logger.report("Interpretation of exit block has started.");
+    g_logger.report("[INTERPRETER] Exit evaluation started.");
     if (block->block_type == Tokentype::Exit){
 
         // ==== Start to interpret conditions ==== //
@@ -131,11 +131,11 @@ void Interpreter::run(){
 
     // ==== If invalid ==== //
     if (!root_cast){
-        g_logger.report("Tree root is not recognizable.");
+        g_logger.report("[INTERPRETER][ERROR] Root node is not recognizable.");
     }
 
     // ==== Evaluate script if cast is successful ==== //
-    g_logger.report("Interpretation has started.");
+    g_logger.report("[INTERPRETER] Run started.");
     eval_program(root_cast);
 }
 // ====================================================== //
@@ -153,12 +153,10 @@ void Interpreter::run(){
 // ====================================================== //
 
 void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
-    g_logger.report(std::string("Indicator interpreter is launched."));
-
+    
     // ==== Evaluates indicator section and expands indicator section ==== //
     ExecutionContext ctx{variables_, data_, dataMap_, functionMap};
     for (auto& [key,assignment] : block->entries){
-        g_logger.report(std::string("Indicator found: " + key));
 
         // ==== Loop through all key-value pair ==== //
         if (auto assign_node = std::dynamic_pointer_cast<ASTAssignment>(assignment)){
@@ -171,7 +169,7 @@ void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
             }
         }
     }
-    g_logger.report("All indicators are evaluated.");
+    g_logger.report("[INTERPRETER] Indicators evaluated.");
     return ;
 }
 // ====================================================== //
@@ -189,19 +187,19 @@ void Interpreter::eval_program(const std::shared_ptr<ASTRoot>& root){
 
     // ==== Cast general purpose objects into their specific substructs ==== //
     if (root->config.has_value()) {
-        g_logger.report("Config interpretation has started...");
+        g_logger.report("[INTERPRETER] Config evaluation started.");
         auto config_block = std::dynamic_pointer_cast<ASTBlock>(root->config.value());
         eval_config(config_block);
     }
 
     if (root->data) {
-        g_logger.report("Data fetching has started...");
+        g_logger.report("[INTERPRETER] Data fetch started.");
         auto data_block = std::dynamic_pointer_cast<ASTList>(root->data);
         eval_data(data_block);
     }
 
     if (root->strategy){
-        g_logger.report("Strategy interpretation has started...");
+        g_logger.report("[INTERPRETER] Strategy evaluation started.");
         auto strategy_block = std::dynamic_pointer_cast<Strategy>(root->strategy);
         eval_strategy(strategy_block);
     }
@@ -226,7 +224,6 @@ void Interpreter::eval_strategy(const std::shared_ptr<Strategy>& strategy){
         if (auto block_node = std::dynamic_pointer_cast<ASTBlock>(block)){
             auto type = block_node->block_type.value();
             auto it = strategy_blocks.find(type);
-            g_logger.report(std::string("Executing strategy block: ") + to_string(type));
 
             if (it!=strategy_blocks.end()){
                 it->second(block_node);

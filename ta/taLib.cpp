@@ -91,7 +91,7 @@ std::vector<double> MA(const multiValue& args,
         result.push_back(sum / period);
     }
 
-    g_logger.report(std::format("MA calculated (period={})", period));
+    g_logger.report(std::format("[TA] MA calculated (period={})", period));
     return result;
 }
 
@@ -202,6 +202,6 @@ std::vector<double> RSI(const multiValue& args,
         rsi[i] = compute_rsi(avg_gain, avg_loss);
     }
 
-    g_logger.report(std::format("RSI calculated (period={})", period));
+    g_logger.report(std::format("[TA] RSI calculated (period={})", period));
     return rsi;
 }

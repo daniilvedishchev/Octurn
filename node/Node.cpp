@@ -83,7 +83,6 @@ AnyValue ASTFunctionCall::eval_node(std::optional<AnyValue>left,std::optional<An
     }
 
     auto name = func_node->name;
-    g_logger.report("Evaluating function: "+name);
 
     auto it = ctx->functionMapper.find(name);
     auto& variables_ = ctx->variables;

@@ -117,13 +117,11 @@ std::shared_ptr<ASTBlock> Parser::create_block_node(Tokentype block_type, NodeMa
 }
 
 std::shared_ptr<ASTNode> Parser::parse_nested_block(Tokentype& block_type){
-    g_logger.report("Starting to parse a nested block...");
     NodeMap map;
 
     while (match(Tokentype::Identifier)){
 
         std::string IdentifierName = current_token().value;
-        g_logger.report("Parsing key: " + IdentifierName);
 
         consume_token(Tokentype::Identifier);
         
@@ -143,7 +141,6 @@ std::shared_ptr<ASTNode> Parser::parse_nested_block(Tokentype& block_type){
             }
         }
         else{
-            g_logger.report("Error: Unexpected token while parsing key: " + IdentifierName);
             throw_error();
         }
     }
@@ -155,7 +152,6 @@ std::shared_ptr<ASTNode> Parser::parse_nested_block(Tokentype& block_type){
 }
 
 std::shared_ptr<ASTNode> Parser::parse_config(){
-    g_logger.report(std::string("Config parser is started."));
     if (match(Tokentype::Config)){
         // ==== Specify block type ==== //
         auto type = current_token().token_type;
@@ -293,7 +289,6 @@ std::shared_ptr<ASTNode> Parser::parse_indicators(){
     }
 
     // ==== Close 'indicators' block ==== //
-    g_logger.report("Indicator block is successfully parsed!");
     consume_token(Tokentype::RightBrace);
 
     return indicator_block;
@@ -302,7 +297,6 @@ std::shared_ptr<ASTNode> Parser::parse_indicators(){
 std::shared_ptr<ASTNode> Parser::parse_comparison(){
     auto left = parse_arithmetics();
 
-    g_logger.report("Parsing Comparisons");
 
     while (current_token().operator_type.has_value() &&
        (current_token().operator_type == OperatorType::Less ||
@@ -317,7 +311,6 @@ std::shared_ptr<ASTNode> Parser::parse_comparison(){
 
 std::shared_ptr<ASTNode> Parser::parse_arithmetics(){
     auto left = parse_factor();
-    g_logger.report("Parsing Arithmetics");
 
     while (current_token().operator_type.has_value() &&
         (current_token().operator_type == OperatorType::Plus ||
@@ -335,7 +328,6 @@ std::shared_ptr<ASTNode> Parser::parse_arithmetics(){
 
 std::shared_ptr<ASTNode> Parser::parse_expression(){
     auto left = parse_term();
-    g_logger.report("Parsing Expressions");
 
     while (current_token().operator_type.has_value() &&
        (current_token().operator_type == OperatorType::Or)) {
@@ -350,7 +342,6 @@ std::shared_ptr<ASTNode> Parser::parse_expression(){
 std::shared_ptr<ASTNode> Parser::parse_term(){
 
     auto left = parse_comparison();
-    g_logger.report("Parsing Terms");
 
     while (current_token().operator_type.has_value() &&
        (current_token().operator_type == OperatorType::And)) {
@@ -365,7 +356,6 @@ std::shared_ptr<ASTNode> Parser::parse_term(){
 }
 
 std::shared_ptr<ASTNode> Parser::parse_factor() {
-    g_logger.report("Parsing Factors");
 
     if (is_function_call()) {
         return parse_function();
@@ -460,7 +450,6 @@ std::shared_ptr<Strategy> Parser::append_strategy_blocks() {
 
             // ==== Pushes block into 'strategy' tree and marks block as seen ==== //
             strategy->blocks.push_back(block_node);
-            g_logger.report(std::format("Successfully parsed {} in 'Strategy' section" ,to_string(type)));
             seen_types.insert(type);
 
         } else {
@@ -527,7 +516,6 @@ std::shared_ptr<ASTNode> Parser::parse_data(){
 // ==== Utility function to parse entry/exit ==== //
 std::shared_ptr<ASTNode> Parser::parse_block_entry_exit(Tokentype blockType) {
     auto block = std::make_shared<ASTBlock>();
-    g_logger.report("Parsing entry/exit");
 
     if (match(blockType)) {
         consume_token(blockType);
@@ -542,15 +530,12 @@ std::shared_ptr<ASTNode> Parser::parse_block_entry_exit(Tokentype blockType) {
             if (blockType == Tokentype::Entry) {
 
                 block->entries["Entry"] = parse_expression();
-                g_logger.report("Entry is parsed!");
             };
 
             if (blockType == Tokentype::Exit){
                 block->entries["Exit"] = parse_expression();
-                g_logger.report("Exit is parsed!");
             };
 
-            g_logger.report("Conditions are parsed!");
 
             // consume_token(Tokentype::LeftBrace);
             // block->entries["Action"] = parse_action();
@@ -607,28 +592,24 @@ std::shared_ptr<ASTNode> Parser::parse_strategy(){
 }
 
 void Parser::exec_config_parser(std::shared_ptr<ASTRoot>& root){
-    g_logger.report("Config keyword found.");
     if (root->config) {
         throw std::runtime_error("Duplicate 'config' block.");
     }
     root->config = parse_config();
-    g_logger.report("Config is successfully parsed.");
+    g_logger.report("[PARSER] Config parsed.");
     if (root->config.has_value() && root->config.value()) {
-        g_logger.report("Config block exists.");
     } else {
-        g_logger.report("No config block found.");
     }
 }
 
 void Parser::exec_strategy_parser(std::shared_ptr<ASTRoot>& root){
-    g_logger.report("Started parsing strategy block.");
     if (root->strategy){
         throw std::runtime_error("Duplicate 'strategy' block.");
     }
     root->strategy = parse_strategy();
+    g_logger.report("[PARSER] Strategy parsed.");
     consume_token(Tokentype::End);
     if (root->strategy){
-        g_logger.report("Strategy block parsed successfully.");
     }
     else{
         throw std::runtime_error("Missing 'strategy' block.");
@@ -637,7 +618,7 @@ void Parser::exec_strategy_parser(std::shared_ptr<ASTRoot>& root){
 
 // ==== Organizes all block parsers in one function ==== //
 std::shared_ptr<ASTNode> Parser::parse() {
-    g_logger.report("Started parsing.");
+    g_logger.report("[PARSER] Parse started.");
     auto root = std::make_shared<ASTRoot>();
 
     // ==== Parse DSL in not order dependent manner ==== //
@@ -647,7 +628,6 @@ std::shared_ptr<ASTNode> Parser::parse() {
         if (match(Tokentype::Config)){
             exec_config_parser(root);
         }else if (match(Tokentype::Data)){
-            g_logger.report("Data keyword found.");
             root->data = parse_data();
         }
         else if (match(Tokentype::Strategy)){

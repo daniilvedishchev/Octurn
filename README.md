@@ -66,7 +66,7 @@ while (!engine.is_done()) {
 - `mappers` - function registry (indicator map)
 
 ## Extending indicators
-1) Add the implementation in `TA/taLib.cpp`
+1) Add the implementation in `ta/taLib.cpp`
 2) Register it in `mappers/maps.cpp`
 
 ## Build notes

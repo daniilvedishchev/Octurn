@@ -2,7 +2,7 @@
 #include <string>
 #include "lexer/Lexer.hpp"
 #include "parser/Parser.hpp"
-#include "interpreter/Interpretor.hpp"
+#include "interpreter/Interpreter.hpp"
 #include "utils/Utils.hpp"
 #include "src/polygon/polygonDataFeed.hpp"
 #include "src/polygon/polygonClient.hpp"

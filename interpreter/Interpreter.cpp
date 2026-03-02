@@ -1,4 +1,4 @@
-#include "Interpretor.hpp"
+#include "Interpreter.hpp"
 #include "utils/Utils.hpp"
 #include "log/logHandler.hpp"
 #include <iostream>

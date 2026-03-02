@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(my_api_test CXX)
+project(octurn_api_test CXX)
 
 add_executable(${PROJECT_NAME} test_main.cc)
 

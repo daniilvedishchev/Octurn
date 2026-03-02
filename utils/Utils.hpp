@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "interpreter/Interpretor.hpp"
+#include "interpreter/Interpreter.hpp"
 #include "types/types.hpp"
 
 // ===============================================

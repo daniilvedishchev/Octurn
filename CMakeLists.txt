@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(TestParserInterpretor)
+project(Octurn)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,10 +14,10 @@ add_library(octurn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/node/Node.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/parser/Parser.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/lexer/Lexer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/Interpretator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/Interpreter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/Utils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/log/logHandler.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/TA/taLib.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/ta/taLib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mappers/maps.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/config/cfgTemp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonClient.cpp

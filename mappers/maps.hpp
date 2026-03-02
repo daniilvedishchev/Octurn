@@ -3,7 +3,7 @@
 #include "lexer/Token.hpp"
 #include <map>
 #include <string>
-#include "TA/taLib.hpp" // Technical analysis functions //
+#include "ta/taLib.hpp" // Technical analysis functions //
 
 using Octurn::multiValue;
 using Octurn::taFunctionCall;

@@ -11,7 +11,21 @@ class Parser {
 public:
     using BlockHandler = std::function<std::shared_ptr<ASTNode>(Parser&)>;
     using ptrVector = std::vector<std::shared_ptr<ASTNode>>;
+
+    // ====================================================== //
+    //            Restriction on copy constructors
+    // --- Usual constructor
+    // --- Deleted copy-constructors
+    // --- Default move-constructor
+    // ====================================================== //
+
     Parser(const std::vector<Token>& tokens);
+
+    Parser& operator=(const Parser&) = delete;
+    Parser(const Parser&) = delete;
+
+    Parser(Parser&& other);
+    Parser& operator=(Parser&&);
 
     // ====================================================== //
     //                    Token logic
@@ -129,10 +143,9 @@ public:
 
     // ===================================== //
 private:
-    const std::vector<Token>& tokens_;
+    std::vector<Token> tokens_;
     size_t pos_;
-    // ============== Scalable ============= //
+    
     std::unordered_map<Tokentype, std::function<std::shared_ptr<ASTNode>()>> block_parsers;
-    // ===================================== //
 
 };

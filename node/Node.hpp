@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <variant>
+#include <iostream>
 #include <map>
 #include "lexer/Lexer.hpp"
 #include "types/types.hpp"

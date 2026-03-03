@@ -54,6 +54,7 @@ Lexer::Lexer(const std::string& strategy_text) : pos_(0), lineNum_(1), colNum_(1
     // ==== Read strategy as string ==== //
     input_ = strategy_text;
     input_size_ = input_.size();
+    tokenize();
 }
 
 void Lexer::read_file_to_string(const std::string& filename) {
@@ -220,6 +221,6 @@ void Lexer::tokenize() {
     }
 }
 
-const std::vector<Token>& Lexer::get_tokens(){
+std::vector<Token>& Lexer::get_tokens(){
     return tokens_;
 }

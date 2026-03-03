@@ -22,6 +22,7 @@ add_library(octurn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/config/cfgTemp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonClient.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonDataFeed.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/engine/octurn.cpp
 )
   
 target_include_directories(octurn_core PUBLIC

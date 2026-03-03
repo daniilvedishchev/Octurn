@@ -16,8 +16,7 @@ std::string Parser::operator_to_string(OperatorType op) {
 
 // ===== Init Parser Class + Handler to avoid explicit if - else problems =====
 Parser::Parser(const std::vector<Token>& tokens)
-        : tokens_(tokens), pos_(0) 
-    {
+        : tokens_(tokens), pos_(0) {
         // ==== Scalable maps ==== //
         block_parsers = {
             {Tokentype::Parameters, [this](){ return parse_parameters(); }},
@@ -38,8 +37,9 @@ Parser::Parser(const std::vector<Token>& tokens)
             {"to", "string"}
         };
 
-    }
+}
 
+Parser::Parser(Parser&& other): tokens_(other.tokens_),pos_(other.pos_),block_parsers(other.block_parsers) {};
 
 const Token& Parser::current_token() const {
     return tokens_[pos_];

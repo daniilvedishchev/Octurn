@@ -26,9 +26,8 @@ void BacktestCtrl::asyncHandleHttpRequest(const drogon::HttpRequestPtr& req, std
 
     try {
 
-        // ==== Lexer init + tokenization ==== //
+        // ==== Lexer init ==== //
         Lexer lexer(strategyText);
-        lexer.tokenize();
         std::vector<Token> tokens_ = lexer.get_tokens();
 
         // ==== Create parser class object ==== //

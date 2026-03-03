@@ -46,3 +46,34 @@ std::string print_any_value(AnyValue& value){
         return str;
     },value);
 }
+
+void printVariables(Interpreter& interp){
+    std::cout << "\nVariables:\n";
+    for (auto& [key, value] : interp.get_variables()) {
+        if (std::holds_alternative<std::vector<bool>>(value) ||
+            std::holds_alternative<std::vector<double>>(value)) {
+            auto str = print_any_value(value);
+            std::cout << "  " << key << " = " << str << "\n";
+        } else if (std::holds_alternative<bool>(value)) {
+            std::cout << "  " << key << " = " << std::get<bool>(value) << "\n";
+        } else if (std::holds_alternative<double>(value)) {
+            std::cout << "  " << key << " = " << std::get<double>(value) << "\n";
+        } else if (std::holds_alternative<std::string>(value)) {
+            std::cout << "  " << key << " = " << std::get<std::string>(value) << "\n";
+        }
+    }
+
+    std::cout << "\nData:\n";
+    for (auto& [key, value] : interp.get_data()) {
+        if (std::holds_alternative<std::vector<bool>>(value) ||
+            std::holds_alternative<std::vector<double>>(value)) {
+            auto str = print_any_value(value);
+            std::cout << "  " << key << " = " << str << "\n";
+        }
+    }
+
+    std::cout << "\n Flags:\n";
+    for (const auto& [key, value] : interp.get_flags()) {
+        std::cout << "  " << key << " = " << value << "\n";
+    }
+}

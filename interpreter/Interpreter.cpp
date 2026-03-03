@@ -267,7 +267,7 @@ std::unordered_map<std::string,AnyValue>& Interpreter::get_variables() {
 }
 
 std::unordered_map<std::string,AnyValue>& Interpreter::get_data() {
-    return feeder_.dataMapVec;
+    return dataMap_;
 }
 
 std::unordered_map<std::string,bool> Interpreter::get_flags(){

@@ -14,7 +14,7 @@ public:
     void tokenize();
 
     // Get the list of tokens
-    const std::vector<Token>& get_tokens();
+    std::vector<Token>& get_tokens();
     // Read the file content into the input buffer
     void read_file_to_string(const std::string& filename);
 

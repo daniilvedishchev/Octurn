@@ -14,7 +14,6 @@ bool str_to_bool(const std::string& s) {
     throw std::invalid_argument("Invalid boolean string: " + s);
 }
 
-
 // ===============================================
 //  Prints arrays of bools doubles or nested ones
 // ===============================================

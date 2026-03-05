@@ -3,7 +3,7 @@
 
 engine::engine(std::string& api,std::string& script)
     : lexer_(script),
-      tokens_(lexer_.get_tokens()),
+      tokens_(std::move(lexer_.get_tokens())),
       parser_(tokens_),
       client_(api),
       feeder_(std::move(client_)),

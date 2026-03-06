@@ -13,8 +13,10 @@ struct trade {
 };
 
 struct timestamp {
-    std::string enstamp;
-    std::string exstamp;
+    std::string entryTimestamp;
+    int entryIdx;
+    std::string exitTimestamp;
+    int exitIdx;
 };
 
 class backtesterCore {
@@ -24,5 +26,6 @@ class backtesterCore {
         std::vector<trade> history_;
     public:
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
+        std::string idx2stamp(int& idx);
         void execute(std::string& ticker,std::vector<AnyValue>& entries,std::vector<AnyValue>& exits);
 };

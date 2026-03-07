@@ -59,5 +59,16 @@ std::unordered_map<std::string, Rule> cfgTemplate = {
                 return true;
             }
         }    
+    }},
+    { "riskPerTrade", {
+        ValueType::Double, true, std::nullopt,
+        [](const AnyValue& v,config& cfg, std::string& err){
+            double riskPerTrade = std::get<double>(v);
+            if (riskPerTrade > 100 || riskPerTrade < 0){
+                err = "riskPerTrade should be a positive value in the range of (0-100) %";
+                return false;
+            }
+            return true;
+        }    
     }}
 };

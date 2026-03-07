@@ -8,13 +8,23 @@ struct timestamp {
     size_t exitIdx;
 };
 
+enum class ordertype {
+    Buy,Sell
+};
+
+enum class action {
+    Entry,Exit
+};
+
 struct trade {
 
     std::string ticker;
+    
+    ordertype type;
     timestamp timestamp;
 
     double avgExecutionPrice;
-    double stopLoss;
+    double stopLossPrice;
     double positionSize;
 
     trade(std::string& ticker);
@@ -22,13 +32,18 @@ struct trade {
 
 class backtesterCore {
     private:
+
         std::unordered_map<std::string, AnyValue> data_;
         config cfg_;
         std::vector<trade> history_;
         std::vector<std::string> timestampVec_;
         size_t maxSize_;
+
     public:
+
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
+        void setEntryExit(size_t& i, trade& trade, action&& action);
+        void populateTradeFromCfg(trade& trade);
         std::string idx2stamp(size_t& idx);
         void execute(std::string& ticker,std::vector<bool>& entries,std::vector<bool>& exits);
 };

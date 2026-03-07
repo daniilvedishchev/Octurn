@@ -19,6 +19,7 @@ struct config{
     double commissionBps;
     double slippageBps;
     double positionSize;
+    double riskPerTrade;
 
     Mode positionMode;
 };

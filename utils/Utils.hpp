@@ -13,3 +13,5 @@ bool str_to_bool(const std::string& s);
 std::string print_any_value(Octurn::AnyValue& value);
 
 void printVariables(Interpreter& interp);
+
+void printTrades();

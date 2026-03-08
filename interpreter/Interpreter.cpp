@@ -308,7 +308,7 @@ void Interpreter::eval_config_map(const NodeMap& map){
 void Interpreter::build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
 std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt){
     std::string error;
-    bool validated {cfgIt->second.validate(varIt->second,cfg_,error)};
+    bool validated {(varIt == variables_.end()) ? cfgIt->second.validate(varIt->second,cfg_,error): cfgIt->second.validate(cfgIt->second.defaultValue.value(),cfg_,error)};
     if (!validated){
         std::runtime_error(std::format("Unable to build config, error occured: {}",error));
     }

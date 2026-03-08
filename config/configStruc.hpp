@@ -17,9 +17,10 @@ enum class Mode {
 struct config{
     double equity;
     double commissionBps;
-    double slippageBps;
     double positionSize;
     double riskPerTrade;
+
+    std::string slippageRegime;
 
     Mode positionMode;
 };

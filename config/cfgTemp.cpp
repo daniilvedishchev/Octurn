@@ -19,12 +19,10 @@ std::unordered_map<std::string, Rule> cfgTemplate = {
             return true;
         }
     }},
-    { "slippageBps", {
-        ValueType::Double, true, std::nullopt,
+    { "slippageRegime", {
+        ValueType::Double, false, "base",
         [](const AnyValue& v,config& cfg, std::string& err){
-            double slippageBps = std::get<double>(v);
-            if (slippageBps < 0) { err = "slippageBps must be >= 0"; return false; }
-            cfg.slippageBps = slippageBps;
+            std::string slippage = std::get<std::string>(v);
             return true;
         }
     }},

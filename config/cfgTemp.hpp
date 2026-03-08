@@ -9,6 +9,7 @@
 
 using Octurn::AnyValue;
 enum class ValueType {Double,String,Mode};
+enum class Slippage {optimistic,base,pessimistic};
 //using Value = std::variant<std::string,bool,double,Mode>;
 
 struct Rule {

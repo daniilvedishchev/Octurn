@@ -23,7 +23,8 @@ struct trade {
     ordertype type;
     timestamp timestamp;
 
-    double avgExecutionPrice;
+    double executionPrice;
+    double qty;
     double stopLossPrice;
     double positionSize;
 

@@ -16,13 +16,22 @@ void backtesterCore::populateTradeFromCfg(trade& trade){
 
     auto key = trade.ticker + "close";
     auto it = data_.find(key);
+    auto itVol = data_.find("Volume");
 
     if (it == data_.end()){
         throw std::runtime_error(std::format("Unable to get price at idx:{}, close field doesn't exist",trade.timestamp.entryIdx));
     }
 
-    trade.stopLossPrice = std::get<std::vector<double>>(it->second) \
-    [trade.timestamp.entryIdx]*((trade.type == ordertype::Sell) ? 1+(cfg_.riskPerTrade)/100 : 1-(cfg_.riskPerTrade)/100);
+    double close = std::get<std::vector<double>>(it->second)[trade.timestamp.entryIdx];
+    double volume = std::get<std::vector<double>>(itVol->second)[trade.timestamp.entryIdx];
+
+    trade.qty = cfg_.positionSize/close;
+
+    trade.stopLossPrice = close *((trade.type == ordertype::Sell) ? 1+(cfg_.riskPerTrade)/100 : 1-(cfg_.riskPerTrade)/100);
+
+    double participation = trade.qty/volume;
+    
+
 }
 
 void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){

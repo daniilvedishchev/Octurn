@@ -27,7 +27,7 @@ struct trade {
     double stopLossPrice;
     double positionSize;
 
-    trade(std::string& ticker);
+    trade(const std::string& ticker_);
 };
 
 class backtesterCore {
@@ -42,8 +42,9 @@ class backtesterCore {
     public:
 
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
-        void setEntryExit(size_t& i, trade& trade, action&& action);
+        void setEntryExit(size_t& i, trade& trade, action actiontype);
         void populateTradeFromCfg(trade& trade);
+        bool stopLossHit();
         std::string idx2stamp(size_t& idx);
-        void execute(std::string& ticker,std::vector<bool>& entries,std::vector<bool>& exits);
+        void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
 };

@@ -6,19 +6,27 @@ backtesterCore::backtesterCore(std::unordered_map<std::string, AnyValue>& data,c
     history_.reserve(maxSize_);
 };
 
-trade::trade(std::string& ticker) : ticker(std::move(ticker)){};
+trade::trade(const std::string& ticker_){ticker = ticker_;};
 
 std::string backtesterCore::idx2stamp(size_t& idx){
     return timestampVec_[idx];
 };
 
 void backtesterCore::populateTradeFromCfg(trade& trade){
-    trade.stopLossPrice = std::get<std::vector<double>>(data_[trade.ticker+"close"]) \
+
+    auto key = trade.ticker + "close";
+    auto it = data_.find(key);
+
+    if (it == data_.end()){
+        throw std::runtime_error(std::format("Unable to get price at idx:{}, close field doesn't exist",trade.timestamp.entryIdx));
+    }
+
+    trade.stopLossPrice = std::get<std::vector<double>>(it->second) \
     [trade.timestamp.entryIdx]*((trade.type == ordertype::Sell) ? 1+(cfg_.riskPerTrade)/100 : 1-(cfg_.riskPerTrade)/100);
 }
 
-void backtesterCore::setEntryExit(size_t& i, trade& trade, action&& action){
-    if (action == action::Entry){
+void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){
+    if (actiontype == action::Entry){
         trade.timestamp.entryIdx = i+1;
         trade.timestamp.entryTimestamp = idx2stamp(trade.timestamp.entryIdx);
     } else {
@@ -27,7 +35,7 @@ void backtesterCore::setEntryExit(size_t& i, trade& trade, action&& action){
     }
 }
 
-void backtesterCore::execute(std::string& ticker,std::vector<bool>& entries,std::vector<bool>& exits){
+void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits){
 
     bool enteredTrade{false};
     trade newtrade(ticker);

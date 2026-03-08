@@ -32,6 +32,7 @@ void backtesterCore::populateTradeFromCfg(trade& trade){
     double participation = trade.qty/volume;
     
 
+
 }
 
 void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){

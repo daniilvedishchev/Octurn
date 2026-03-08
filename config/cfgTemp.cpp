@@ -1,5 +1,27 @@
 #include "config/cfgTemp.hpp"
 
+void stringToSlippage(const std::string& slippage, config& cfg) {
+    if (slippage == "base") {
+        cfg.slippageRegime = Slippage::base;
+    } else if (slippage == "optimistic") {
+        cfg.slippageRegime = Slippage::optimistic;
+    } else if (slippage == "pessimistic") {
+        cfg.slippageRegime = Slippage::pessimistic;
+    }
+}
+
+std::unordered_map<Slippage,std::unordered_map<std::string,double>> SlippageCfg {
+    {
+        Slippage::base,{
+                {"max_participation",0.10},
+                {"impact_coef",10.0},
+                {"slippage"}
+        }
+                
+    }
+}
+
+
 std::unordered_map<std::string, Rule> cfgTemplate = {
     { "equity", {
         ValueType::Double, true, std::nullopt,
@@ -23,6 +45,7 @@ std::unordered_map<std::string, Rule> cfgTemplate = {
         ValueType::Double, false, "base",
         [](const AnyValue& v,config& cfg, std::string& err){
             std::string slippage = std::get<std::string>(v);
+            stringToSlippage(slippage,cfg);
             return true;
         }
     }},
@@ -48,8 +71,7 @@ std::unordered_map<std::string, Rule> cfgTemplate = {
             if (cfg.positionMode == Mode::fixed) {
                 if (positionSize<0) {
                     err ="fixed positionSize must be a positive number";
-                    return false;
-                };
+                    return false;};
                 cfg.positionSize = positionSize;
                 return true;
             } else {

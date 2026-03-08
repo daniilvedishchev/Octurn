@@ -20,7 +20,7 @@ struct config{
     double positionSize;
     double riskPerTrade;
 
-    std::string slippageRegime;
+    Slippage slippageRegime;
 
     Mode positionMode;
 };

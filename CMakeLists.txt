@@ -19,11 +19,16 @@ add_library(octurn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/log/logHandler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/ta/taLib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mappers/maps.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/cfgTemp.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/config.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/configRules.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/configUtilities.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/configValidator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/slippageTable.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonClient.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonDataFeed.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/engine/octurn.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backtester/backtesterCore.cpp
+
 )
   
 target_include_directories(octurn_core PUBLIC

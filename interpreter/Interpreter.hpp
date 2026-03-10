@@ -7,8 +7,7 @@
 #include "node/Node.hpp"
 #include "types/types.hpp"
 #include "mappers/maps.hpp"
-#include "config/configStruc.hpp"
-#include "config/cfgTemp.hpp"
+#include "config/config.hpp"
 #include "src/polygon/polygonDataFeed.hpp"
 
 

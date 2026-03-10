@@ -16,7 +16,7 @@
 
 // ====================================================== //
 Interpreter::Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder)
-    : root_(std::move(root)),feeder_(std::move(feeder))
+    : root_(std::move(root)),feeder_(std::move(feeder)),cfg_(&variables_)
 {
     strategy_blocks = {
         {Tokentype::Config, [this](const std::shared_ptr<ASTBlock>& block){
@@ -298,35 +298,12 @@ void Interpreter::apply_kv(const std::string& key, const std::shared_ptr<ASTNode
 }
 
 void Interpreter::eval_config_map(const NodeMap& map){
-    // Value in map could contain children map so it's treated as block //
     for (auto& [key, node_value] : map) {
         apply_kv(key, node_value, true);
     }
 }
 
-
-void Interpreter::build_config(std::unordered_map<std::string, Rule>::iterator& cfgIt,
-std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt){
-    std::string error;
-    bool validated {(varIt == variables_.end()) ? cfgIt->second.validate(varIt->second,cfg_,error): cfgIt->second.validate(cfgIt->second.defaultValue.value(),cfg_,error)};
-    if (!validated){
-        std::runtime_error(std::format("Unable to build config, error occured: {}",error));
-    }
-}
-
-void Interpreter::required_config_parameteters_in(){
-    for (auto cfgIt = cfgTemplate.begin(); cfgIt != cfgTemplate.end();cfgIt++){
-        auto varIt = variables_.find(cfgIt->first);
-        // if required and not in the variable section -> throw
-        if (cfgIt->second.required == true && varIt == variables_.end()){
-            std::runtime_error(std::format("Required config parameter \"{}\" is missing",cfgIt->first));
-        } else if (cfgIt->second.required == false && varIt == variables_.end()){
-            continue;
-        } else build_config(cfgIt,varIt);
-    }
-}
-
 void Interpreter::eval_config(const std::shared_ptr<ASTBlock>& block){
     eval_config_map(block->entries);
-    required_config_parameteters_in();
+    cfg_.cfgValidator_.requiredCfgParametersCheckThenBuild(cfgRules,cfg_);
 }

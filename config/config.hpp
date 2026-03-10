@@ -13,18 +13,16 @@
 
 class config {
     public:
-    
+
         double commissionBps;
-        double equity;
+        double equity; 
         double riskPerTrade;
         double stopLossBps;
 
         Slippage slippageRegime;
 
         config(std::unordered_map<std::string,AnyValue>* variables);
-    private:
-        configValidator cfgValidator_;
-        std::unordered_map<std::string,AnyValue>* variables_;
-
         
+        configValidator cfgValidator_;
+        std::unordered_map<std::string,AnyValue>* variables_;    
 };

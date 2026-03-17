@@ -19,9 +19,13 @@ enum class action {
 };
 
 struct QtyState {
+
     double targetQty = 0.0;
     double filledQty = 0.0;
-    double remainingQty = std::max(0.0,(targetQty-filledQty));
+
+    double remainingQty() const {
+        return std::max(0.0, targetQty - filledQty);
+    }
 };
 
 struct PriceState {
@@ -68,7 +72,8 @@ class backtesterCore {
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
 
 
-        void GTC(trade& trade, size_t idxBias);
+        void initGTC(trade& trade);
+        void executeGTCBar(trade& trade, size_t idxBias);
 
         bool stopLossHit();
         void fillPosition(trade& trade);

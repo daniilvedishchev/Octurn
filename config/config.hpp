@@ -18,11 +18,13 @@ class config {
         double equity; 
         double riskPerTrade;
         double stopLossBps;
+        double spread;
 
         Slippage slippageRegime;
+        SlippageParams slippage;
 
         config(std::unordered_map<std::string,AnyValue>* variables);
-        
+
         configValidator cfgValidator_;
         std::unordered_map<std::string,AnyValue>* variables_;    
 };

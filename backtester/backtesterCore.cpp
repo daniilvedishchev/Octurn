@@ -55,18 +55,52 @@ void backtesterCore::fillPosition(trade& trade){
     size_t bias{0};
     size_t idx = trade.timestamp.entryIdx;
 
-    SlippageParams slippageParams = getSlippageParams(cfg_,slippageTable);
+    cfg_.slippage = getSlippageParams(cfg_,slippageTable);
 
 
 }
 
-void backtesterCore::GTC(trade& trade, size_t idxBias){
-    double open = getValue("open",trade.timestamp.entryIdx);
-    double stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1+bpsToFrac(cfg_.stopLossBps));
+void backtesterCore::initGTC(trade& trade){
 
-    (trade.type == ordertype::Buy) ? trade.price.stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1-bpsToFrac(cfg_.stopLossBps)) : 
-    trade.price.stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1+bpsToFrac(cfg_.stopLossBps));
+    const double open = getValue(makeField(trade.ticker,"open"), trade.timestamp.entryIdx);
+    const double bps  = bpsToFrac(cfg_.stopLossBps);
 
+    const double slMult = (trade.type == ordertype::Buy) ? (1.0 - bps) : (1.0 + bps);
+    trade.price.stopLossPrice = open * slMult;
+
+    const double risk = cfg_.riskPerTrade * cfg_.equity * 0.01;
+    const double dist = std::abs(open - trade.price.stopLossPrice);
+
+    if (dist <= 0.0) {
+        throw std::runtime_error("Stop-loss distance is zero");
+    }
+
+    trade.qty.targetQty = risk / dist;
+    trade.isPending = (trade.qty.remainingQty() > 0.0);
+
+}
+
+void backtesterCore::executeGTCBar(trade& trade,size_t idxBias){
+    size_t idx = trade.timestamp.entryIdx + idxBias;
+
+    const double open = getValue(makeField(trade.ticker,"open"),idx);
+    const double volume = getValue(makeField(trade.ticker,"volume"),idx);
+
+    double qtyLiq = cfg_.slippage.maxParticipation*getValue(makeField(trade.ticker,"volume"),idx);
+
+    double qty = std::min(qtyLiq,trade.qty.remainingQty());
+    trade.qty.filledQty+=qty;
+
+    double impactBps = cfg_.slippage.impactCoef*sqrt(std::min(qty/volume,cfg_.slippage.maxParticipation)); 
+    double price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
+
+
+
+
+    if (trade.qty.remainingQty()>0){
+        idxBias++;
+        executeGTCBar(trade,idxBias);
+    }
 }
 
 void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){

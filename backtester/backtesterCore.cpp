@@ -36,15 +36,11 @@ double backtesterCore::bpsToFrac(double bps) const {
 
 
 SlippageParams backtesterCore::getSlippageParams(const config& cfg,
-                                 const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& SlippageCfg,
-                                 double volume)
+    const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable)
 {
-    auto it = SlippageCfg.find(cfg.slippageRegime);
-    if (it == SlippageCfg.end()) {
+    auto it = slippageTable.find(cfg.slippageRegime);
+    if (it == slippageTable.end()) {
         throw std::runtime_error("Unknown slippageRegime");
-    }
-    if (volume <= 0.0) {
-        throw std::runtime_error("Volume must be > 0");
     }
 
     return {
@@ -55,103 +51,21 @@ SlippageParams backtesterCore::getSlippageParams(const config& cfg,
 
 
 void backtesterCore::fillPosition(trade& trade){
+
     size_t bias{0};
     size_t idx = trade.timestamp.entryIdx;
-    SlippageParams globalSlippageEnv = getSlippageParams(cfg_,
-                                        SlippageCfg,
-                                        getValue(makeField(trade.ticker,"volume"),idx));
-    killOrFill(trade,idx+bias);
+
+    SlippageParams slippageParams = getSlippageParams(cfg_,slippageTable);
+
 
 }
 
-void backtesterCore::killOrFill(trade& trade, size_t idxBias){
+void backtesterCore::GTC(trade& trade, size_t idxBias){
+    double open = getValue("open",trade.timestamp.entryIdx);
+    double stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1+bpsToFrac(cfg_.stopLossBps));
 
-    if (trade.targetQty == trade.filledQty){
-        return;
-    }
-
-    if (idxBias == 0){
-        SlippageParams slipParams = getSlippageParams(cfg_,SlippageCfg,);
-    }
-
-    const double maxParticipation = slipParams.maxParticipation;
-    const double impactB          = slipParams.impactCoef;
-    const double accountRisk      = cfg_.equity * cfg_.riskPerTrade;
-
-    double estExecutionPrice = 0.0;
-    double estStopLossPrice  = 0.0;
-
-    if (trade.type == ordertype::Buy) {
-        estExecutionPrice = open * (1.0 + bpsToFrac(cfg_.spreadBps));
-        estStopLossPrice  = estExecutionPrice * (1.0 - bpsToFrac(cfg_.stopLossBps));
-    } else {
-        estExecutionPrice = open * (1.0 - bpsToFrac(cfg_.spreadBps));
-        estStopLossPrice  = estExecutionPrice * (1.0 + bpsToFrac(cfg_.stopLossBps));
-    }
-
-    const double estRiskPerShare = std::abs(estExecutionPrice - estStopLossPrice);
-    if (estRiskPerShare <= 0.0) {
-        throw std::runtime_error("Estimated risk per share must be > 0");
-    }
-
-    trade.targetQty = accountRisk / estRiskPerShare;
-
-    const double estParticipation = trade.targetQty / volume;
-    const double cappedParticipation = std::min(estParticipation, maxParticipation);
-
-    // 4) Impact po capped participation
-    const double impactBps = std::sqrt(cappedParticipation) * impactB;
-
-    // 5) Final execution price + stop
-    if (trade.type == ordertype::Buy) {
-        trade.avgPrice = open * (1.0 + bpsToFrac(cfg_.spreadBps + impactBps));
-        trade.stopLossPrice  = trade.avgPrice * (1.0 - bpsToFrac(cfg_.stopLossBps));
-    } else {
-        trade.avgPrice = open * (1.0 - bpsToFrac(cfg_.spreadBps + impactBps));
-        trade.stopLossPrice  = trade.avgPrice * (1.0 + bpsToFrac(cfg_.stopLossBps));
-    }
-
-    const double riskPerShare = std::abs(trade.avgPrice - trade.stopLossPrice);
-    if (riskPerShare <= 0.0) {
-        throw std::runtime_error("Risk per share must be > 0");
-    }
-
-    const double qtyRisk = accountRisk / riskPerShare;
-
-    const double qtyCash =
-        cfg_.equity / (trade.avgPrice * (1.0 + bpsToFrac(cfg_.commissionBps)));
-
-    const double qtyLiquidity = volume * maxParticipation;
-
-    trade.filledQty += std::floor(std::min({qtyRisk, qtyCash, qtyLiquidity}));
-
-    double bar{0};
-    trade.brokerCommisionCash += trade.filledQty*volume;
-
-    while (trade.targetQty != trade.filledQty){
-        bar++;
-        size_t idx = trade.timestamp.entryIdx + bar;
-
-        double open = getValue(makeField(trade.ticker, "open"), idx);
-        double volume = getValue(makeField(trade.ticker, "volume"), idx);
-
-
-
-
-    }
-}
-
-void backtesterCore::populateTradeFromCfg(trade& trade){
-
-    double open = getValue(makeField(trade.ticker, "open"), trade.timestamp.entryIdx);
-    double volume = getValue("Volume", trade.timestamp.entryIdx);
-    
-    double accountRisk = cfg_.equity * cfg_.riskPerTrade;
-    double riskPerShare = open * cfg_.stopLossBps / 10000.0;
-
-    trade.qty = accountRisk / riskPerShare;
-
-    trade.participation = trade.qty/volume;
+    (trade.type == ordertype::Buy) ? trade.price.stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1-bpsToFrac(cfg_.stopLossBps)) : 
+    trade.price.stopLossPrice = getValue("open",trade.timestamp.entryIdx) * (1+bpsToFrac(cfg_.stopLossBps));
 
 }
 
@@ -182,7 +96,6 @@ void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& 
             if (entries[i] == true && exits[i] == false){
                 enteredTrade = true;
                 setEntryExit(i,newtrade,action::Entry);
-                populateTradeFromCfg(newtrade);
             }
         } else {
             if (exits[i] == true){

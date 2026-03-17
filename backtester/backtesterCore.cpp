@@ -80,26 +80,32 @@ void backtesterCore::initGTC(trade& trade){
 
 }
 
-void backtesterCore::executeGTCBar(trade& trade,size_t idxBias){
-    size_t idx = trade.timestamp.entryIdx + idxBias;
+void backtesterCore::executeGTCBar(trade& trade,size_t idx){
 
     const double open = getValue(makeField(trade.ticker,"open"),idx);
     const double volume = getValue(makeField(trade.ticker,"volume"),idx);
 
-    double qtyLiq = cfg_.slippage.maxParticipation*getValue(makeField(trade.ticker,"volume"),idx);
+    if (volume <= 0) return;
 
+    double qtyLiq = cfg_.slippage.maxParticipation*getValue(makeField(trade.ticker,"volume"),idx);
     double qty = std::min(qtyLiq,trade.qty.remainingQty());
-    trade.qty.filledQty+=qty;
 
     double impactBps = cfg_.slippage.impactCoef*sqrt(std::min(qty/volume,cfg_.slippage.maxParticipation)); 
-    double price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
+    double price{0.0};
 
+    if (trade.type == ordertype::Sell){
+        price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
+    } else price = open*(1.0 - bpsToFrac(cfg_.spread) - bpsToFrac(impactBps));
+    
+    double qtyPrice = cfg_.equity/price;
 
+    qty = std::min(qty,qtyPrice);
 
+    trade.qty.filledQty+=qty;
+    trade.executionPrice.push_back({price,qty});
 
-    if (trade.qty.remainingQty()>0){
-        idxBias++;
-        executeGTCBar(trade,idxBias);
+    if (trade.qty.remainingQty() == 0){
+        trade.isPending=false;
     }
 }
 

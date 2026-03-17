@@ -33,12 +33,17 @@ struct PriceState {
     double stopLossPrice;
 };
 
+struct PriceQty{
+    double price;
+    double qty;
+};
+
 struct trade {
 
     std::string ticker;
     timestamp timestamp;
 
-    std::unordered_map<std::string,double> executionPrice;
+    std::vector<PriceQty> executionPrice;
 
     ordertype type;
     QtyState qty;

@@ -2,57 +2,7 @@
 #include <algorithm>
 #include "interpreter/Interpreter.hpp"
 #include "config/config.hpp"
-
-struct timestamp {
-    std::string entryTimestamp;
-    size_t entryIdx;
-    std::string exitTimestamp;
-    size_t exitIdx;
-};
-
-enum class ordertype {
-    Buy,Sell
-};
-
-enum class action {
-    Entry,Exit
-};
-
-struct QtyState {
-
-    double targetQty = 0.0;
-    double filledQty = 0.0;
-
-    double remainingQty() const {
-        return std::max(0.0, targetQty - filledQty);
-    }
-};
-
-struct PriceState {
-    double avgPrice;
-    double stopLossPrice;
-};
-
-struct PriceQty{
-    double price;
-    double qty;
-};
-
-struct trade {
-
-    std::string ticker;
-    timestamp timestamp;
-
-    std::vector<PriceQty> executionPrice;
-
-    ordertype type;
-    QtyState qty;
-    PriceState price;
-
-    bool isPending{false};
-
-    trade(const std::string& ticker_);
-};
+#include "trade/trade.hpp"
 
 class backtesterCore {
     private:
@@ -62,13 +12,7 @@ class backtesterCore {
         std::vector<std::string> timestampVec_;
         size_t maxSize_;
 
-        double getValue(const std::string& key, size_t idx);
-
-        SlippageParams getSlippageParams(const config& cfg,const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable);
-        
         void setEntryExit(size_t& i, trade& trade, action actiontype);
-
-        double bpsToFrac(double bps) const;
 
         std::string idx2stamp(size_t& idx);
 

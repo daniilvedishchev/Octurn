@@ -60,12 +60,15 @@ SlippageParams ExecutionEngine::getSlippageParams(const config& cfg,
 }
 
 void ExecutionEngine::fillPosition(trade& trade){
-    
+    return;
 }
 
 void ExecutionEngine::initOrder(trade& trade){
-
+    
     const Bar bar = getBar(trade.ticker,trade.timestamp.entryIdx);
+    
+    trade.availableCash = cfg_.equity;
+
     const double open = bar.open;
     const double bps  = bpsToFrac(cfg_.stopLossBps);
 

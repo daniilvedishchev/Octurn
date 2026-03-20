@@ -1,4 +1,4 @@
-#include "executionEngine.hpp"
+#include "ExecutionEngine.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -7,12 +7,12 @@
 
 #include "config/slippageTable.hpp"
 
-executionEngine::executionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg)
+ExecutionEngine::ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg)
     : data_(data), cfg_(cfg) {
         cfg_.slippage = getSlippageParams(cfg_,slippageTable);
     }
 
-double executionEngine::getValue(const std::string& key, size_t idx){
+double ExecutionEngine::getValue(const std::string& key, size_t idx){
     auto it = data_.find(key);
     if (it == data_.end())
         throw std::runtime_error(std::format("Series {} not found", key));
@@ -25,7 +25,7 @@ double executionEngine::getValue(const std::string& key, size_t idx){
     return series[idx];
 }
 
-Bar executionEngine::getBar(const std::string& ticker, size_t idx) {
+Bar ExecutionEngine::getBar(const std::string& ticker, size_t idx) {
     return {
         .open   = getValue(makeField(ticker, "open"), idx),
         .high   = getValue(makeField(ticker, "high"), idx),
@@ -35,16 +35,16 @@ Bar executionEngine::getBar(const std::string& ticker, size_t idx) {
     };
 }
 
-std::string executionEngine::makeField(const std::string& ticker, const std::string& field)
+std::string ExecutionEngine::makeField(const std::string& ticker, const std::string& field)
 {
     return ticker + "_" + field;
 }
 
-double executionEngine::bpsToFrac(double bps) const {
+double ExecutionEngine::bpsToFrac(double bps) const {
     return bps / 10000.0;
 }
 
-SlippageParams executionEngine::getSlippageParams(const config& cfg,
+SlippageParams ExecutionEngine::getSlippageParams(const config& cfg,
     const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable){
 
     auto it = slippageTable.find(cfg.slippageRegime);
@@ -59,11 +59,11 @@ SlippageParams executionEngine::getSlippageParams(const config& cfg,
     };
 }
 
-void executionEngine::fillPosition(trade& trade){
-
+void ExecutionEngine::fillPosition(trade& trade){
+    
 }
 
-void executionEngine::baseTradeInit(trade& trade){
+void ExecutionEngine::initOrder(trade& trade){
 
     const Bar bar = getBar(trade.ticker,trade.timestamp.entryIdx);
     const double open = bar.open;
@@ -84,7 +84,7 @@ void executionEngine::baseTradeInit(trade& trade){
 
 }
 
-double executionEngine::getAdjPrice(trade& trade,double const & open,double const& impactBps){
+double ExecutionEngine::getAdjPrice(trade& trade,double const & open,double const& impactBps){
     double price{0.0};
 
     if (trade.type == ordertype::Sell){
@@ -94,7 +94,7 @@ double executionEngine::getAdjPrice(trade& trade,double const & open,double cons
     return price;
 }
 
-void executionEngine::stopLoss(trade& trade, double entryPrice) {
+void ExecutionEngine::stopLoss(trade& trade, double entryPrice) {
     const double bps = bpsToFrac(cfg_.stopLossBps);
 
     if (trade.type == ordertype::Buy) {
@@ -104,7 +104,7 @@ void executionEngine::stopLoss(trade& trade, double entryPrice) {
     }
 }
 
-double executionEngine::calcImpactBps(double qty, double volume) const {
+double ExecutionEngine::calcImpactBps(double qty, double volume) const {
     if (volume <= 0.0 || qty <= 0.0) {
         return 0.0;
     }
@@ -115,11 +115,11 @@ double executionEngine::calcImpactBps(double qty, double volume) const {
     return cfg_.slippage.impactCoef * std::sqrt(participation);
 }
 
-double executionEngine::calcQtyCash(double price) const {
+double ExecutionEngine::calcQtyCash(double price) const {
     return cfg_.equity / price;
 }
 
-bool executionEngine::FOK(trade& trade) {
+bool ExecutionEngine::FOK(trade& trade) {
     const Bar bar = getBar(trade.ticker, trade.timestamp.entryIdx);
     const double needQty = trade.qty.targetQty;
 
@@ -158,19 +158,16 @@ bool executionEngine::FOK(trade& trade) {
         If the order is too big to execute without significant price change,
         fill will be done in the following candles  in order to get a good avgPrice
 */
-void executionEngine::executeGTCBar(trade& trade,size_t idx){
+void ExecutionEngine::executeGTCBar(trade& trade,size_t idx){
 
     const Bar bar = getBar(trade.ticker,idx);
 
-    const double open = bar.open;
-    const double volume = bar.volume;
-
-    if (volume <= 0) return;
+    if (bar.volume <= 0) return;
 
     double qtyLiq = cfg_.slippage.maxParticipation*bar.volume;
     double qty = std::min(qtyLiq,trade.qty.remainingQty());
 
-    double price = getAdjPrice(trade, open, calcImpactBps(qty,volume));
+    double price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
 
     double qtyCash = calcQtyCash(price);
 
@@ -184,11 +181,12 @@ void executionEngine::executeGTCBar(trade& trade,size_t idx){
     trade.executionPrice.push_back({price,qty});
 
     if (trade.qty.remainingQty() == 0){
+        averageExecutionPrice(trade);
         trade.isPending=false;
     }
 }
 
-void executionEngine::averageExecutionPrice(trade& trade) const {
+void ExecutionEngine::averageExecutionPrice(trade& trade) const {
     const auto& fills = trade.executionPrice;
 
     double totalQty{0};

@@ -9,7 +9,7 @@
 
 using Octurn::AnyValue;
 
-class executionEngine
+class ExecutionEngine
 {
 private:
     std::unordered_map<std::string, AnyValue>& data_;
@@ -30,9 +30,9 @@ private:
     double calcQtyCash(double price) const;
 
 public:
-    executionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg);
+    ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg);
 
-    void baseTradeInit(trade& trade);
+    void initOrder(trade& trade);
     void executeGTCBar(trade& trade, size_t idx);
     void fillPosition(trade& trade);
 };

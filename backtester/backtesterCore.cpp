@@ -11,21 +11,6 @@ std::string backtesterCore::idx2stamp(size_t& idx){
     return timestampVec_[idx];
 };
 
-void backtesterCore::fillPosition(trade& trade){
-    executionEngine exec(data_, cfg_);
-    exec.fillPosition(trade);
-}
-
-void backtesterCore::initGTC(trade& trade){
-    executionEngine exec(data_, cfg_);
-    exec.initGTC(trade);
-}
-
-void backtesterCore::executeGTCBar(trade& trade,size_t idx){
-    executionEngine exec(data_, cfg_);
-    exec.executeGTCBar(trade, idx);
-}
-
 void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){
     if (actiontype == action::Entry) {
         trade.timestamp.entryIdx = i+1;

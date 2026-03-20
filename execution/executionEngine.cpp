@@ -8,7 +8,9 @@
 #include "config/slippageTable.hpp"
 
 executionEngine::executionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg)
-    : data_(data), cfg_(cfg) {}
+    : data_(data), cfg_(cfg) {
+        cfg_.slippage = getSlippageParams(cfg_,slippageTable);
+    }
 
 double executionEngine::getValue(const std::string& key, size_t idx){
     auto it = data_.find(key);
@@ -23,6 +25,16 @@ double executionEngine::getValue(const std::string& key, size_t idx){
     return series[idx];
 }
 
+Bar executionEngine::getBar(const std::string& ticker, size_t idx) {
+    return {
+        .open   = getValue(makeField(ticker, "open"), idx),
+        .high   = getValue(makeField(ticker, "high"), idx),
+        .low    = getValue(makeField(ticker, "low"), idx),
+        .close  = getValue(makeField(ticker, "close"), idx),
+        .volume = getValue(makeField(ticker, "volume"), idx)
+    };
+}
+
 std::string executionEngine::makeField(const std::string& ticker, const std::string& field)
 {
     return ticker + "_" + field;
@@ -33,9 +45,10 @@ double executionEngine::bpsToFrac(double bps) const {
 }
 
 SlippageParams executionEngine::getSlippageParams(const config& cfg,
-    const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable)
-{
+    const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable){
+
     auto it = slippageTable.find(cfg.slippageRegime);
+
     if (it == slippageTable.end()) {
         throw std::runtime_error("Unknown slippageRegime");
     }
@@ -48,17 +61,12 @@ SlippageParams executionEngine::getSlippageParams(const config& cfg,
 
 void executionEngine::fillPosition(trade& trade){
 
-    size_t bias{0};
-    size_t idx = trade.timestamp.entryIdx;
-
-    cfg_.slippage = getSlippageParams(cfg_,slippageTable);
-
-
 }
 
 void executionEngine::baseTradeInit(trade& trade){
 
-    const double open = getValue(makeField(trade.ticker,"open"), trade.timestamp.entryIdx);
+    const Bar bar = getBar(trade.ticker,trade.timestamp.entryIdx);
+    const double open = bar.open;
     const double bps  = bpsToFrac(cfg_.stopLossBps);
 
     const double slMult = (trade.type == ordertype::Buy) ? (1.0 - bps) : (1.0 + bps);
@@ -80,29 +88,68 @@ double executionEngine::getAdjPrice(trade& trade,double const & open,double cons
     double price{0.0};
 
     if (trade.type == ordertype::Sell){
-        price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
-    } else price = open*(1.0 - bpsToFrac(cfg_.spread) - bpsToFrac(impactBps));
+        price = open*(1.0 - bpsToFrac(cfg_.spread) - bpsToFrac(impactBps));
+    } else price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
 
     return price;
 }
 
-void executionEngine::FOK(trade& trade){
+void executionEngine::stopLoss(trade& trade, double entryPrice) {
+    const double bps = bpsToFrac(cfg_.stopLossBps);
 
-    const double open = getValue(makeField(trade.ticker,"open"), trade.timestamp.entryIdx);
-    const double volume = getValue(makeField(trade.ticker,"volume"),trade.timestamp.entryIdx);
+    if (trade.type == ordertype::Buy) {
+        trade.price.stopLossPrice = entryPrice * (1.0 - bps);
+    } else {
+        trade.price.stopLossPrice = entryPrice * (1.0 + bps);
+    }
+}
 
-    const double bps  = bpsToFrac(cfg_.stopLossBps);
+double executionEngine::calcImpactBps(double qty, double volume) const {
+    if (volume <= 0.0 || qty <= 0.0) {
+        return 0.0;
+    }
 
-    double qtyLiq = cfg_.slippage.maxParticipation*getValue(makeField(trade.ticker,"volume"),trade.timestamp.entryIdx);
-    double qtyCash = cfg_.equity/open;
+    const double participation =
+        std::min(qty / volume, cfg_.slippage.maxParticipation);
 
-    double qty = std::min(qtyLiq,qtyCash);
+    return cfg_.slippage.impactCoef * std::sqrt(participation);
+}
 
-    if (trade.qty.targetQty < qty){
-        double impactBps = cfg_.slippage.impactCoef*sqrt(std::min(qty/volume,cfg_.slippage.maxParticipation));
-        double const& price =  getAdjPrice(trade,open,impactBps);
-    } else throw std::runtime_error("Unable to fullfill an order");
+double executionEngine::calcQtyCash(double price) const {
+    return cfg_.equity / price;
+}
 
+bool executionEngine::FOK(trade& trade) {
+    const Bar bar = getBar(trade.ticker, trade.timestamp.entryIdx);
+    const double needQty = trade.qty.targetQty;
+
+    if (bar.volume <= 0.0) {
+        throw std::runtime_error("Volume must be > 0");
+    }
+
+    if (needQty <= 0.0) {
+        throw std::runtime_error("Target qty must be > 0");
+    }
+
+    const double qtyLiq = cfg_.slippage.maxParticipation * bar.volume;
+    const double impactBps = calcImpactBps(needQty, bar.volume);
+    const double price = getAdjPrice(trade, bar.open, impactBps);
+    const double qtyCash = cfg_.equity / price;
+
+    const bool canFillByLiquidity = (needQty <= qtyLiq);
+    const bool canFillByCash = (needQty <= qtyCash);
+
+    if (!canFillByLiquidity || !canFillByCash) {
+        return false;
+    }
+
+    trade.qty.filledQty = needQty;
+    trade.price.avgPrice = price;
+    trade.isPending = false;
+
+    stopLoss(trade, price);
+
+    return true;
 }
 
 /**
@@ -113,24 +160,25 @@ void executionEngine::FOK(trade& trade){
 */
 void executionEngine::executeGTCBar(trade& trade,size_t idx){
 
-    const double open = getValue(makeField(trade.ticker,"open"),idx);
-    const double volume = getValue(makeField(trade.ticker,"volume"),idx);
+    const Bar bar = getBar(trade.ticker,idx);
+
+    const double open = bar.open;
+    const double volume = bar.volume;
 
     if (volume <= 0) return;
 
-    double qtyLiq = cfg_.slippage.maxParticipation*getValue(makeField(trade.ticker,"volume"),idx);
+    double qtyLiq = cfg_.slippage.maxParticipation*bar.volume;
     double qty = std::min(qtyLiq,trade.qty.remainingQty());
 
-    double impactBps = cfg_.slippage.impactCoef*sqrt(std::min(qty/volume,cfg_.slippage.maxParticipation));
-    double price{0.0};
+    double price = getAdjPrice(trade, open, calcImpactBps(qty,volume));
 
-    if (trade.type == ordertype::Sell){
-        price = open*(1.0 + bpsToFrac(cfg_.spread) + bpsToFrac(impactBps));
-    } else price = open*(1.0 - bpsToFrac(cfg_.spread) - bpsToFrac(impactBps));
+    double qtyCash = calcQtyCash(price);
 
-    double qtyPrice = cfg_.equity/price;
+    qty = std::min(qty,qtyCash);
 
-    qty = std::min(qty,qtyPrice);
+    if (qty <= 0.0) {
+        return;
+    }
 
     trade.qty.filledQty+=qty;
     trade.executionPrice.push_back({price,qty});

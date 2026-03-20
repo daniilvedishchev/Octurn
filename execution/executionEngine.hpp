@@ -22,8 +22,12 @@ private:
     double getAdjPrice(trade& trade,double const & open,double const& impactBps);
     static std::string makeField(const std::string& ticker, const std::string& field);
 
-    void FOK(trade& trade);
+    bool FOK(trade& trade);
+    void stopLoss(trade& trade,double open);
     void averageExecutionPrice(trade& trade) const;
+    Bar getBar(const std::string& ticker, size_t idx);
+    double calcImpactBps(double qty, double volume) const;
+    double calcQtyCash(double price) const;
 
 public:
     executionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg);

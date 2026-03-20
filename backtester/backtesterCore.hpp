@@ -19,12 +19,5 @@ class backtesterCore {
     public:
         config cfg_;
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
-
-
-        void initGTC(trade& trade);
-        void executeGTCBar(trade& trade, size_t idxBias);
-
-        bool stopLossHit();
-        void fillPosition(trade& trade);
         void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
 };

@@ -5,9 +5,8 @@
 #include <optional>
 #include <unordered_map>
 #include "types/types.hpp"
-#include "config/configUtilities.hpp"
+#include "config/configTypes.hpp"
 #include "config/configValidator.hpp"
-#include "config/configRules.hpp"
 #include "config/slippageTable.hpp"
 
 
@@ -19,6 +18,7 @@ class config {
         double riskPerTrade;
         double stopLossBps;
         double spread;
+        double shortInitMargin;
 
         Slippage slippageRegime;
         SlippageParams slippage;

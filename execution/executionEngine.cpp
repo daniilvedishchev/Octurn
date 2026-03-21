@@ -1,9 +1,9 @@
 #include "ExecutionEngine.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <format>
 #include <stdexcept>
+#include <algorithm>
 
 #include "config/slippageTable.hpp"
 
@@ -118,8 +118,26 @@ double ExecutionEngine::calcImpactBps(double qty, double volume) const {
     return cfg_.slippage.impactCoef * std::sqrt(participation);
 }
 
-double ExecutionEngine::calcQtyCash(double price) const {
-    return cfg_.equity / price;
+void ExecutionEngine::applyCashEffect(trade& trade, double qty, double price){
+    double commission = (1+bpsToFrac(cfg_.commissionBps));
+    if (trade.type == ordertype::Buy) {
+        trade.availableCash -= qty * price * commission;
+    } else {
+        trade.availableCash -= qty * price * cfg_.shortInitMargin * commission;
+    }
+}
+
+double ExecutionEngine::calcQtyCash(const trade& trade, double price) const {
+    double commission = (1+bpsToFrac(cfg_.commissionBps));
+    if (price <= 0.0) {
+        throw std::runtime_error("Price must be > 0");
+    }
+
+    if (trade.type == ordertype::Buy) {
+        return trade.availableCash / (price * commission);
+    } 
+    
+    return trade.availableCash / (price * cfg_.shortInitMargin * commission);
 }
 
 bool ExecutionEngine::FOK(trade& trade) {
@@ -137,7 +155,7 @@ bool ExecutionEngine::FOK(trade& trade) {
     const double qtyLiq = cfg_.slippage.maxParticipation * bar.volume;
     const double impactBps = calcImpactBps(needQty, bar.volume);
     const double price = getAdjPrice(trade, bar.open, impactBps);
-    const double qtyCash = cfg_.equity / price;
+    const double qtyCash = calcQtyCash(trade,price);
 
     const bool canFillByLiquidity = (needQty <= qtyLiq);
     const bool canFillByCash = (needQty <= qtyCash);
@@ -148,9 +166,12 @@ bool ExecutionEngine::FOK(trade& trade) {
 
     trade.qty.filledQty = needQty;
     trade.price.avgPrice = price;
+
     trade.isPending = false;
+    applyCashEffect(trade,needQty,price);
 
     stopLoss(trade, price);
+    trade.executionPrice.push_back({price, needQty});
 
     return true;
 }
@@ -168,23 +189,29 @@ void ExecutionEngine::executeGTCBar(trade& trade,size_t idx){
     if (bar.volume <= 0) return;
 
     double qtyLiq = cfg_.slippage.maxParticipation*bar.volume;
-    double qty = std::min(qtyLiq,trade.qty.remainingQty());
+    double qty = std::min(qtyLiq, trade.qty.remainingQty());
+    if (qty <= 0.0) return;
 
     double price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
+    double qtyCash = calcQtyCash(trade, price);
 
-    double qtyCash = calcQtyCash(price);
+    qty = std::min(qty, qtyCash);
+    if (qty <= 0.0) return;
 
-    qty = std::min(qty,qtyCash);
+    price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
 
     if (qty <= 0.0) {
         return;
     }
 
-    trade.qty.filledQty+=qty;
+    trade.qty.filledQty += qty;
     trade.executionPrice.push_back({price,qty});
 
-    if (trade.qty.remainingQty() == 0){
-        averageExecutionPrice(trade);
+    averageExecutionPrice(trade);
+    stopLoss(trade, trade.price.avgPrice);
+    applyCashEffect(trade,qty,price);
+
+    if (trade.qty.remainingQty() <= 0){
         trade.isPending=false;
     }
 }

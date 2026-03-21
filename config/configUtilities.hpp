@@ -1,5 +1,6 @@
 #pragma once
-#include "config/config.hpp"
-#include "config/configTypes.hpp"
+#include <string>
+
+class config;
 
 void stringToSlippage(const std::string& slippage, config& cfg);

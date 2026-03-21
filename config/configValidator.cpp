@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "config/configValidator.hpp"
+#include "config/config.hpp"
 
 /**
     @brief This script is used for config validaton: requiredParams check && their characteristics

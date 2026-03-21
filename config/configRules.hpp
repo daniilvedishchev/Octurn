@@ -1,7 +1,8 @@
 #pragma once
 #include <unordered_map>
 #include "config/configTypes.hpp"
-#include "config/config.hpp"
+
+class config;
 
 struct Rule {
     ValueType type;

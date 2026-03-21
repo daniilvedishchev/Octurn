@@ -1,4 +1,6 @@
 #include "config/configRules.hpp"
+#include "config/config.hpp"
+#include "config/configUtilities.hpp"
 std::unordered_map<std::string, Rule> cfgRules = {
     { "equity", {
         ValueType::Double, true, std::nullopt,

@@ -9,8 +9,7 @@
 
 using Octurn::AnyValue;
 
-class ExecutionEngine
-{
+class ExecutionEngine {
 private:
     std::unordered_map<std::string, AnyValue>& data_;
     config& cfg_;
@@ -27,7 +26,8 @@ private:
     void averageExecutionPrice(trade& trade) const;
     Bar getBar(const std::string& ticker, size_t idx);
     double calcImpactBps(double qty, double volume) const;
-    double calcQtyCash(double price) const;
+    double calcQtyCash(const trade& trade, double price) const;
+    void applyCashEffect(trade& trade, double qty, double price);
 
 public:
     ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg);

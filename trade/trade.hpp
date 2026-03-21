@@ -3,8 +3,6 @@
 #include "marketTypes/marketTypes.hpp"
 struct trade {
 
-    double availableCash;
-
     std::string ticker;
     timestamp timestamp;
 
@@ -15,7 +13,6 @@ struct trade {
     PriceState price;
 
     bool isPending{false};
-
 
     trade(const std::string& ticker_);
 };

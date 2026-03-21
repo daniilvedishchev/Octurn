@@ -6,6 +6,7 @@
 #include "config/config.hpp"
 #include "trade/trade.hpp"
 #include "types/types.hpp"
+#include "account/account.hpp"
 
 using Octurn::AnyValue;
 
@@ -13,6 +14,7 @@ class ExecutionEngine {
 private:
     std::unordered_map<std::string, AnyValue>& data_;
     config& cfg_;
+    account& account_;
 
     double getValue(const std::string& key, size_t idx);
     double bpsToFrac(double bps) const;
@@ -30,7 +32,7 @@ private:
     void applyCashEffect(trade& trade, double qty, double price);
 
 public:
-    ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg);
+    ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg, account& account);
 
     void initOrder(trade& trade);
     void executeGTCBar(trade& trade, size_t idx);

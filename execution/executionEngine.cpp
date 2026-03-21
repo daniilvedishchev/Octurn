@@ -7,15 +7,16 @@
 
 #include "config/slippageTable.hpp"
 
-ExecutionEngine::ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg)
-    : data_(data), cfg_(cfg) {
+ExecutionEngine::ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg,account& account)
+    : data_(data), cfg_(cfg), account_(account) {
         cfg_.slippage = getSlippageParams(cfg_,slippageTable);
+        account_.cash = cfg_.equity;
+        account_.equity = cfg_.equity;
     }
 
 double ExecutionEngine::getValue(const std::string& key, size_t idx){
     auto it = data_.find(key);
-    if (it == data_.end())
-        throw std::runtime_error(std::format("Series {} not found", key));
+    if (it == data_.end()) throw std::runtime_error(std::format("Series {} not found", key));
 
     const auto& series = std::get<std::vector<double>>(it->second);
 
@@ -66,8 +67,6 @@ void ExecutionEngine::fillPosition(trade& trade){
 void ExecutionEngine::initOrder(trade& trade){
     
     const Bar bar = getBar(trade.ticker,trade.timestamp.entryIdx);
-    
-    trade.availableCash = cfg_.equity;
 
     const double open = bar.open;
     const double bps  = bpsToFrac(cfg_.stopLossBps);
@@ -75,7 +74,7 @@ void ExecutionEngine::initOrder(trade& trade){
     const double slMult = (trade.type == ordertype::Buy) ? (1.0 - bps) : (1.0 + bps);
     trade.price.stopLossPrice = open * slMult;
 
-    const double risk = cfg_.riskPerTrade * cfg_.equity * 0.01;
+    const double risk = cfg_.riskPerTrade * account_.cash * 0.01;
     const double dist = std::abs(open - trade.price.stopLossPrice);
 
     if (dist <= 0.0) {
@@ -119,25 +118,25 @@ double ExecutionEngine::calcImpactBps(double qty, double volume) const {
 }
 
 void ExecutionEngine::applyCashEffect(trade& trade, double qty, double price){
-    double commission = (1+bpsToFrac(cfg_.commissionBps));
+    double cashCostMultiplier = (1+bpsToFrac(cfg_.commissionBps));
     if (trade.type == ordertype::Buy) {
-        trade.availableCash -= qty * price * commission;
+        account_.cash -= qty * price * cashCostMultiplier;
     } else {
-        trade.availableCash -= qty * price * cfg_.shortInitMargin * commission;
+        account_.cash -= qty * price * cfg_.shortInitMargin * cashCostMultiplier;
     }
 }
 
 double ExecutionEngine::calcQtyCash(const trade& trade, double price) const {
-    double commission = (1+bpsToFrac(cfg_.commissionBps));
+    double cashCostMultiplier = (1+bpsToFrac(cfg_.commissionBps));
     if (price <= 0.0) {
         throw std::runtime_error("Price must be > 0");
     }
 
     if (trade.type == ordertype::Buy) {
-        return trade.availableCash / (price * commission);
+        return account_.cash / (price * cashCostMultiplier);
     } 
     
-    return trade.availableCash / (price * cfg_.shortInitMargin * commission);
+    return account_.cash / (price * cfg_.shortInitMargin * cashCostMultiplier);
 }
 
 bool ExecutionEngine::FOK(trade& trade) {
@@ -200,9 +199,9 @@ void ExecutionEngine::executeGTCBar(trade& trade,size_t idx){
 
     price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
 
-    if (qty <= 0.0) {
-        return;
-    }
+    qtyCash = calcQtyCash(trade, price);
+    qty = std::min(qty, qtyCash);
+    if (qty <= 0.0) return;
 
     trade.qty.filledQty += qty;
     trade.executionPrice.push_back({price,qty});
@@ -223,7 +222,7 @@ void ExecutionEngine::averageExecutionPrice(trade& trade) const {
     double totalNotional{0};
 
     for (const auto& fill : fills){
-        totalNotional+=fill.price*fill.qty;
+        totalNotional += fill.price * fill.qty;
         totalQty += fill.qty;
     }
 

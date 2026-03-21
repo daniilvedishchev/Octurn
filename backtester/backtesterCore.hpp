@@ -1,8 +1,11 @@
+#pragma once
+
 #include <unordered_map>
 #include <algorithm>
 #include "interpreter/Interpreter.hpp"
 #include "config/config.hpp"
 #include "trade/trade.hpp"
+#include "account/account.hpp"
 
 class backtesterCore {
     private:
@@ -18,6 +21,7 @@ class backtesterCore {
 
     public:
         config cfg_;
+        account account_; 
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
         void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
 };

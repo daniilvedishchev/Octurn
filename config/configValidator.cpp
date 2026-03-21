@@ -31,7 +31,8 @@ void configValidator::requiredCfgParametersCheckThenBuild(std::unordered_map<std
 void configValidator::build_config(std::unordered_map<std::string, Rule>::iterator& cfgTmpIt,
                                 std::unordered_map<std::string, Octurn::AnyValue>::iterator& varIt, config& cfg){
     std::string error;
-    bool validated {(varIt == cfg.variables_->end()) ? cfgTmpIt->second.validate(varIt->second,cfg,error): cfgTmpIt->second.validate(cfgTmpIt->second.defaultValue.value(),cfg,error)};
+    bool isPresentVar{(varIt == cfg.variables_->end())};
+    bool validated {isPresentVar ? cfgTmpIt->second.validate(varIt->second,cfg,error): cfgTmpIt->second.validate(cfgTmpIt->second.defaultValue.value(),cfg,error)};
     if (!validated){
         std::runtime_error(std::format("Unable to build config, error occured: {}",error));
     }

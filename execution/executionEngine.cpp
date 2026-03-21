@@ -111,8 +111,7 @@ double ExecutionEngine::calcImpactBps(double qty, double volume) const {
         return 0.0;
     }
 
-    const double participation =
-        std::min(qty / volume, cfg_.slippage.maxParticipation);
+    const double participation = std::min(qty / volume, cfg_.slippage.maxParticipation);
 
     return cfg_.slippage.impactCoef * std::sqrt(participation);
 }

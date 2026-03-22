@@ -72,7 +72,7 @@ void ExecutionEngine::initOrder(trade& trade){
     const double slMult = (trade.type == ordertype::Buy) ? (1.0 - bps) : (1.0 + bps);
     trade.price.stopLossPrice = open * slMult;
 
-    const double risk = cfg_.riskPerTrade * account_.cash * 0.01;
+    const double risk = cfg_.riskPerTrade * account_.availableFreeCash() * 0.01;
     const double dist = std::abs(open - trade.price.stopLossPrice);
 
     if (dist <= 0.0) {
@@ -116,11 +116,14 @@ double ExecutionEngine::calcImpactBps(double qty, double volume) const {
 
 void ExecutionEngine::applyCashEffect(trade& trade, double qty, double price){
     double cashCostMultiplier = (1+bpsToFrac(cfg_.commissionBps));
+    double positionCost{0};
     if (trade.type == ordertype::Buy) {
-        account_.cash -= qty * price * cashCostMultiplier;
+        positionCost = qty * price * cashCostMultiplier;
     } else {
-        account_.cash -= qty * price * cfg_.shortInitMargin * cashCostMultiplier;
+        positionCost = qty * price * cfg_.shortInitMargin * cashCostMultiplier;
     }
+
+    account_.updateFreeCash(-positionCost);
 }
 
 double ExecutionEngine::calcQtyCash(const trade& trade, double price) const {
@@ -130,10 +133,10 @@ double ExecutionEngine::calcQtyCash(const trade& trade, double price) const {
     }
 
     if (trade.type == ordertype::Buy) {
-        return account_.cash / (price * cashCostMultiplier);
+        return account_.availableFreeCash() / (price * cashCostMultiplier);
     } 
     
-    return account_.cash / (price * cfg_.shortInitMargin * cashCostMultiplier);
+    return account_.availableFreeCash() / (price * cfg_.shortInitMargin * cashCostMultiplier);
 }
 
 bool ExecutionEngine::FOK(trade& trade) {

@@ -10,8 +10,6 @@
 ExecutionEngine::ExecutionEngine(std::unordered_map<std::string, AnyValue>& data, config& cfg,account& account)
     : data_(data), cfg_(cfg), account_(account) {
         cfg_.slippage = getSlippageParams(cfg_,slippageTable);
-        account_.cash = cfg_.equity;
-        account_.equity = cfg_.equity;
     }
 
 double ExecutionEngine::getValue(const std::string& key, size_t idx){

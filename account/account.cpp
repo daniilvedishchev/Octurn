@@ -1,15 +1,30 @@
 #include "account/account.hpp"
 
-account::account(double equity) : equity(equity) {}
-
-void account::updateEquity(){
-    equity = profitAndLoss.unrealizedPnL + cash;
+account::account(double equity) : equity(equity), freeCash(equity), reservedMargin(0.0) {
+    profitAndLoss.realizedPnL = 0.0;
+    profitAndLoss.realizedPnL = 0.0;
 }
 
-void account::markToMarket(double currentPrice, double entryPrice, double qty, ordertype side){
-    if (side == ordertype::Buy) {
-        profitAndLoss.unrealizedPnL = (currentPrice - entryPrice) * qty;
-    } else {profitAndLoss.unrealizedPnL = (entryPrice - currentPrice) * qty;}
+void account::updateEquity(){
+    equity = profitAndLoss.unrealizedPnL + freeCash + reservedMargin;
+}
 
-    updateEquity();
+double account::markToMarket(double currentPrice, double entryPrice, double qty, ordertype side){
+    if (side == ordertype::Buy) {
+        return (currentPrice - entryPrice) * qty;
+    } else {return (entryPrice - currentPrice) * qty;}
+}
+
+void account::realizeTradePnL(double tradePnL){
+    profitAndLoss.realizedPnL += tradePnL;
+    profitAndLoss.unrealizedPnL -= tradePnL;
+    freeCash += tradePnL;
+}
+
+double account::availableFreeCash(){
+    return freeCash;
+}
+
+void account::updateFreeCash(double amount){
+    freeCash += amount;
 }

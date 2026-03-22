@@ -12,11 +12,14 @@ private:
     profitAndLoss profitAndLoss;
 
     double equity;
-    double cash;
+    double freeCash;
     double reservedMargin;
 public:
     account(double equity);
 
     void updateEquity();
-    void markToMarket(double currentPrice, double entryPrice, double qty, ordertype side);
+    double markToMarket(double currentPrice, double entryPrice, double qty, ordertype side);
+    void realizeTradePnL(double unrealizedPnL);
+    double availableFreeCash();
+    void account::updateFreeCash(double amount);
 };

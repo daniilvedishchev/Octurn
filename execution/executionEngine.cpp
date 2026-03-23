@@ -18,8 +18,9 @@ double ExecutionEngine::getValue(const std::string& key, size_t idx){
 
     const auto& series = std::get<std::vector<double>>(it->second);
 
-    if (idx >= series.size())
+    if (idx >= series.size()){
         throw std::runtime_error("Index out of bounds");
+    }
 
     return series[idx];
 }
@@ -123,6 +124,8 @@ void ExecutionEngine::applyCashEffect(trade& trade, double qty, double price){
         positionCost = qty * price * cfg_.shortInitMargin * cashCostMultiplier;
     }
 
+    account_.updateReservedMargin(positionCost/cashCostMultiplier);
+    trade.usedMargin += positionCost/cashCostMultiplier;
     account_.updateFreeCash(-positionCost);
 }
 
@@ -194,13 +197,14 @@ void ExecutionEngine::executeGTCBar(trade& trade,size_t idx){
     double price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
     double qtyCash = calcQtyCash(trade, price);
 
-    qty = std::min(qty, qtyCash);
-    if (qty <= 0.0) return;
+    bool canFillByCash = (qtyCash >= qty);
 
-    price = getAdjPrice(trade, bar.open, calcImpactBps(qty, bar.volume));
+    if (!canFillByCash){
+        throw std::runtime_error("Insufficient freeCash balance to cover trade.");
+    }
 
-    qtyCash = calcQtyCash(trade, price);
     qty = std::min(qty, qtyCash);
+
     if (qty <= 0.0) return;
 
     trade.qty.filledQty += qty;

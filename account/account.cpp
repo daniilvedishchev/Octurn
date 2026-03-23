@@ -25,6 +25,10 @@ double account::availableFreeCash(){
     return freeCash;
 }
 
+void account::updateReservedMargin(double amount){
+    reservedMargin += amount;
+}
+
 void account::updateFreeCash(double amount){
     freeCash += amount;
 }

@@ -22,4 +22,5 @@ public:
     void realizeTradePnL(double unrealizedPnL);
     double availableFreeCash();
     void account::updateFreeCash(double amount);
+    void account::updateReservedMargin(double amount);
 };

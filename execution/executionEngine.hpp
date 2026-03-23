@@ -16,7 +16,6 @@ private:
     config& cfg_;
     account& account_;
 
-    double getValue(const std::string& key, size_t idx);
     double bpsToFrac(double bps) const;
     SlippageParams getSlippageParams(const config& cfg,
         const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable);
@@ -37,4 +36,5 @@ public:
     void initOrder(trade& trade);
     void executeGTCBar(trade& trade, size_t idx);
     void fillPosition(trade& trade);
+    double getValue(const std::string& key, size_t idx);
 };

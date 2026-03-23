@@ -6,13 +6,16 @@
 #include "config/config.hpp"
 #include "trade/trade.hpp"
 #include "account/account.hpp"
+#include "execution/ExecutionEngine.hpp"
 
 class backtesterCore {
     private:
 
         std::unordered_map<std::string, AnyValue> data_;
-        std::vector<trade> history_;
+        std::vector<trade> openTrades_;
         std::vector<std::string> timestampVec_;
+        ExecutionEngine executionLayer_;
+        
         size_t maxSize_;
 
         void setEntryExit(size_t& i, trade& trade, action actiontype);
@@ -24,4 +27,6 @@ class backtesterCore {
         account account_; 
         backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
         void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
+        void checkEntryExit(size_t iteration, trade& trade_, bool inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits);
+        void markOpenTradesToMarket(double marketPrice);
 };

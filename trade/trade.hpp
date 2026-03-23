@@ -12,7 +12,10 @@ struct trade {
     QtyState qty;
     PriceState price;
 
-    bool isPending{false};
+    bool isPending;
+
+    double usedMargin;
+    double borrowAccrued;
 
     trade(const std::string& ticker_);
 };

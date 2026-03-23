@@ -25,21 +25,6 @@ double ExecutionEngine::getValue(const std::string& key, size_t idx){
     return series[idx];
 }
 
-Bar ExecutionEngine::getBar(const std::string& ticker, size_t idx) {
-    return {
-        .open   = getValue(makeField(ticker, "open"), idx),
-        .high   = getValue(makeField(ticker, "high"), idx),
-        .low    = getValue(makeField(ticker, "low"), idx),
-        .close  = getValue(makeField(ticker, "close"), idx),
-        .volume = getValue(makeField(ticker, "volume"), idx)
-    };
-}
-
-std::string ExecutionEngine::makeField(const std::string& ticker, const std::string& field)
-{
-    return ticker + "_" + field;
-}
-
 double ExecutionEngine::bpsToFrac(double bps) const {
     return bps / 10000.0;
 }

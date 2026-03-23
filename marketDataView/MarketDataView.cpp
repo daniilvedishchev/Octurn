@@ -9,11 +9,23 @@
 
 using Octurn::AnyValue;
 
-MarketDataView::MarketDataView(const std::string& apiKey)
-    : feeder_(polygonClient(apiKey)) {}
+MarketDataView::MarketDataView(const std::string& apiKey) : feeder_(polygonClient(apiKey)) {}
 
-MarketDataView::MarketDataView(polygonDataFeed&& feeder)
-    : feeder_(std::move(feeder)) {}
+MarketDataView::MarketDataView(polygonDataFeed&& feeder) : feeder_(std::move(feeder)) {}
+
+std::string MarketDataView::makeField(const std::string& ticker, const std::string& field) {
+    return ticker + "_" + field;
+}
+
+Bar MarketDataView::getBar(const std::string& ticker, size_t idx) {
+    return {
+        .open   = getValue(makeField(ticker, "open"), idx),
+        .high   = getValue(makeField(ticker, "high"), idx),
+        .low    = getValue(makeField(ticker, "low"), idx),
+        .close  = getValue(makeField(ticker, "close"), idx),
+        .volume = getValue(makeField(ticker, "volume"), idx)
+    };
+}
 
 void MarketDataView::extract(const std::shared_ptr<ASTList>& list) {
     if (!list) {

@@ -6,6 +6,7 @@
 
 #include "types/types.hpp"
 #include "src/polygon/polygonDataFeed.hpp"
+#include "marketTypes/marketTypes.hpp"
 
 struct ASTList;
 
@@ -15,6 +16,10 @@ private:
     std::unordered_map<std::string, Octurn::AnyValue> dataMap_;
 
 public:
+
+    static std::string makeField(const std::string& ticker, const std::string& field);
+    Bar getBar(const std::string& ticker, size_t idx);
+
     explicit MarketDataView(const std::string& apiKey);
     explicit MarketDataView(polygonDataFeed&& feeder);
 

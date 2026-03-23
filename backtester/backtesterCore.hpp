@@ -7,6 +7,7 @@
 #include "trade/trade.hpp"
 #include "account/account.hpp"
 #include "execution/ExecutionEngine.hpp"
+#include "marketDataView/MarketDataView.hpp"
 
 class backtesterCore {
     private:
@@ -15,6 +16,8 @@ class backtesterCore {
         std::vector<trade> openTrades_;
         std::vector<std::string> timestampVec_;
         ExecutionEngine executionLayer_;
+        MarketDataView marketViewer_;
+
         
         size_t maxSize_;
 
@@ -25,7 +28,7 @@ class backtesterCore {
     public:
         config cfg_;
         account account_; 
-        backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg);
+        backtesterCore(std::unordered_map<std::string, AnyValue>& data, config& cfg, MarketDataView& viewer, ExecutionEngine& executionLayer);
         void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
         void checkEntryExit(size_t iteration, trade& trade_, bool inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits);
         void markOpenTradesToMarket(double marketPrice);

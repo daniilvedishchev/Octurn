@@ -20,7 +20,6 @@ private:
     SlippageParams getSlippageParams(const config& cfg,
         const std::unordered_map<Slippage,std::unordered_map<std::string,double>>& slippageTable);
     double getAdjPrice(trade& trade,double const & open,double const& impactBps);
-    static std::string makeField(const std::string& ticker, const std::string& field);
 
     bool FOK(trade& trade);
     void stopLoss(trade& trade,double open);

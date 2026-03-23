@@ -1,7 +1,7 @@
 #include "backtesterCore.hpp"
 #include "execution/ExecutionEngine.hpp"
 
-backtesterCore::backtesterCore(std::unordered_map<std::string, AnyValue>& data,config& cfg): data_(std::move(data)), cfg_(std::move(cfg)),account_(account(cfg_.equity)) {
+backtesterCore::backtesterCore(std::unordered_map<std::string, AnyValue>& data, config& cfg, MarketDataView& viewer,ExecutionEngine& executionLayer) : data_(std::move(data)), cfg_(std::move(cfg)), account_(account(cfg_.equity)), marketViewer_(viewer), executionLayer_(executionLayer) {
     timestampVec_ = *std::get_if<std::vector<std::string>>(&data_["timestamp"]);
     maxSize_ = timestampVec_.size();
     openTrades_.reserve(maxSize_);
@@ -56,9 +56,9 @@ void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& 
     }
 
     for (size_t i{0}; i < vectSize - 1; i++){
-        double marketPrice = executionLayer_.getValue(makeField(ticker, "open"), idx);
+        double marketPrice = executionLayer_.getValue(marketViewer_.makeField(ticker, "open"), i);
         checkEntryExit(i,trade,inTrade,entries,exits);
-        markOpenTradesToMarket(executionLayer_.);
+        markOpenTradesToMarket(marketPrice);
         
     }
 }

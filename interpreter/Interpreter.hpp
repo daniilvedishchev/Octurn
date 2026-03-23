@@ -8,7 +8,7 @@
 #include "types/types.hpp"
 #include "mappers/maps.hpp"
 #include "config/config.hpp"
-#include "src/polygon/polygonDataFeed.hpp"
+#include "marketDataView/MarketDataView.hpp"
 
 
 using Octurn::AnyValue;
@@ -22,7 +22,7 @@ class Interpreter {
         // ============= Constructor + Run + Getters ============ //
         // ===== Constructor takes root pointer to the tree ===== //
 
-        Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder);
+        Interpreter(std::shared_ptr<ASTNode>& root, MarketDataView&& marketDataView);
         void run();
 
         // ========== Getters for variables and flags =========== //
@@ -37,7 +37,6 @@ class Interpreter {
         void eval_strategy(const std::shared_ptr<Strategy>& strategy);
         void eval_parameters(const std::shared_ptr<ASTBlock>& block);
         void eval_indicators(const std::shared_ptr<ASTBlock>& block);
-        void eval_data(const std::shared_ptr<ASTList>& list);
 
         AnyValue eval_entry(const std::shared_ptr<ASTBlock>& block);
         AnyValue eval_exit(const std::shared_ptr<ASTBlock>& block);
@@ -63,9 +62,7 @@ class Interpreter {
         std::shared_ptr<ASTNode> root_;
         std::unordered_map<std::string,AnyValue> variables_;
         std::unordered_map<std::string,bool> flags_;
-        std::unordered_map<std::string, AnyValue> dataMap_;
-
-        polygonDataFeed feeder_;
+        MarketDataView marketDataView_;
 
         // ==== Variable storage for each block ==== //
         config cfg_;

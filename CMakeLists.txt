@@ -30,6 +30,7 @@ add_library(octurn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/backtester/backtesterCore.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/execution/ExecutionEngine.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/trade/trade.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/marketDataView/MarketDataView.cpp
 
 )
   

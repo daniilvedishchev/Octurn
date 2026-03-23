@@ -1,14 +1,13 @@
 #include "octurn.hpp"
 #include "utils/Utils.hpp"
+#include "marketDataView/MarketDataView.hpp"
 
 engine::engine(std::string& api,std::string& script)
     : lexer_(script),
       tokens_(std::move(lexer_.get_tokens())),
       parser_(tokens_),
-      client_(api),
-      feeder_(std::move(client_)),
       root_(parser_.parse()),
-      interpreter_(root_,feeder_) {}
+      interpreter_(root_, MarketDataView(api)) {}
 
 octurn::octurn(std::string& Script,std::string& API)
     : script_(std::move(Script)),

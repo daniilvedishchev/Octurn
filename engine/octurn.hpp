@@ -4,15 +4,12 @@
 #include "node/Node.hpp"
 #include "interpreter/Interpreter.hpp"
 #include "parser/Parser.hpp"
-#include "src/polygon/polygonClient.hpp"
 #include "lexer/Lexer.hpp"
 
 struct engine {
     Lexer lexer_;
     std::vector<Token> tokens_;
     Parser parser_;
-    polygonClient client_;
-    polygonDataFeed feeder_;
     std::shared_ptr<ASTNode> root_;
     Interpreter interpreter_;
 

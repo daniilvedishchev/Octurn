@@ -3,7 +3,7 @@
 
 polygonDataFeed::polygonDataFeed(polygonClient&& client) : client_(std::move(client)) {};
 
-void polygonDataFeed::loadBars(const std::string& ticker,int multiplier,const std::string& from,const std::string& to,const std::string& timespan){
+std::unordered_map<std::string, AnyValue> polygonDataFeed::loadBars(const std::string& ticker,int multiplier,const std::string& from,const std::string& to,const std::string& timespan){
     
     nlohmann::json json = client_.fetchData(ticker,multiplier,from,to,timespan);
 
@@ -27,10 +27,13 @@ void polygonDataFeed::loadBars(const std::string& ticker,int multiplier,const st
     }
 
     const auto base = ticker + "_";
+    std::unordered_map<std::string, AnyValue> dataMapVec;
     dataMapVec[base + "open"] = AnyValue{std::move(open)};
     dataMapVec[base + "high"] = AnyValue{std::move(high)};
     dataMapVec[base + "low"] = AnyValue{std::move(low)};
     dataMapVec[base + "close"] = AnyValue{std::move(close)};
     dataMapVec[base + "volume"] = AnyValue{std::move(volume)};
     dataMapVec[base + "timestamp"] = AnyValue{std::move(timestamp)};
+
+    return dataMapVec;
 }

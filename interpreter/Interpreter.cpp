@@ -4,6 +4,7 @@
 #include <numeric>
 #include <string>
 #include <regex>
+#include <utility>
 
 
 #define OHLC_SIZE 4
@@ -15,8 +16,8 @@
 // ====================================================== //
 
 // ====================================================== //
-Interpreter::Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder)
-    : root_(std::move(root)),feeder_(std::move(feeder)),cfg_(&variables_)
+Interpreter::Interpreter(std::shared_ptr<ASTNode>& root, MarketDataView&& marketDataView)
+    : root_(std::move(root)), marketDataView_(std::move(marketDataView)), cfg_(&variables_)
 {
     strategy_blocks = {
         {Tokentype::Config, [this](const std::shared_ptr<ASTBlock>& block){
@@ -38,41 +39,6 @@ Interpreter::Interpreter(std::shared_ptr<ASTNode>& root,polygonDataFeed& feeder)
 }
 // ------------------------------------------------------------------------------------------------------------------- //
 
-// ====================================================== //
-//                    Evaluate Data
-// @brief Takes data block and retrieves OHLC data,then putting it in variable map
-// ====================================================== //
-
-void Interpreter::eval_data(const std::shared_ptr<ASTList>& list){
-    if (auto list_node = std::dynamic_pointer_cast<ASTList>(list)){
-        for (auto& data_block : list_node->list){
-            std::string ticker,timespan,from,to;
-            int multiplier;
-            if (auto fetching_params_node = std::dynamic_pointer_cast<ASTBlock>(data_block)){
-                auto fetching_params = fetching_params_node->entries;
-                for (auto& [key,value]:fetching_params){
-                    if (auto value_node = std::dynamic_pointer_cast<ASTValueNode>(value)){
-                        if (std::holds_alternative<std::string>(value_node->value)){
-                            std::string strVal = std::get<std::string>(value_node->value);
-                            if (key == "ticker") ticker = strVal;
-                            else if (key == "from") from = strVal;
-                            else if (key == "to") to = strVal;
-                            else if (key == "timespan") timespan = strVal;
-                        } else if (std::holds_alternative<double>(value_node->value)) {
-                        if (key == "multiplier") multiplier = static_cast<int>(std::get<double>(value_node->value));}
-                    }
-                }
-            }
-            if (ticker.empty()){
-                throw std::runtime_error("No ticker found");
-            }
-
-            feeder_.loadBars(ticker,multiplier,from,to,timespan);
-            dataMap_.merge(std::move(feeder_.dataMapVec));
-        }
-    }
-}
-
 AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
     g_logger.report("[INTERPRETER] Entry evaluation started.");
     if (block->block_type == Tokentype::Entry){
@@ -81,7 +47,7 @@ AnyValue Interpreter::eval_entry(const std::shared_ptr<ASTBlock>& block){
         auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Entry"]);
 
         // ==== Create visitor to get callable type ==== //
-        ExecutionContext ctx{variables_, data_, dataMap_,functionMap};
+        ExecutionContext ctx{variables_, data_, marketDataView_.data(), functionMap};
         Visitor visitor(ctx);
 
         // ==== Recursive propagation through all childs ==== //
@@ -100,7 +66,7 @@ AnyValue Interpreter::eval_exit(const std::shared_ptr<ASTBlock>& block){
         auto condition = std::dynamic_pointer_cast<ASTNode>(block->entries["Exit"]);
 
         // ==== Create visitor to get callable type ==== //
-        ExecutionContext ctx{variables_, data_, dataMap_,functionMap};
+        ExecutionContext ctx{variables_, data_, marketDataView_.data(), functionMap};
         Visitor visitor(ctx);
 
         // ==== Recursive propagation through all childs ==== //
@@ -155,7 +121,7 @@ void Interpreter::run(){
 void Interpreter::eval_indicators(const std::shared_ptr<ASTBlock>& block){
     
     // ==== Evaluates indicator section and expands indicator section ==== //
-    ExecutionContext ctx{variables_, data_, dataMap_, functionMap};
+    ExecutionContext ctx{variables_, data_, marketDataView_.data(), functionMap};
     for (auto& [key,assignment] : block->entries){
 
         // ==== Loop through all key-value pair ==== //
@@ -195,7 +161,7 @@ void Interpreter::eval_program(const std::shared_ptr<ASTRoot>& root){
     if (root->data) {
         g_logger.report("[INTERPRETER] Data fetch started.");
         auto data_block = std::dynamic_pointer_cast<ASTList>(root->data);
-        eval_data(data_block);
+        marketDataView_.extract(data_block);
     }
 
     if (root->strategy){
@@ -267,7 +233,7 @@ std::unordered_map<std::string,AnyValue>& Interpreter::get_variables() {
 }
 
 std::unordered_map<std::string,AnyValue>& Interpreter::get_data() {
-    return dataMap_;
+    return marketDataView_.data();
 }
 
 std::unordered_map<std::string,bool> Interpreter::get_flags(){

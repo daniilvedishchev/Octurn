@@ -12,9 +12,6 @@ class polygonDataFeed{
     private:
         polygonClient client_;
     public:
-
-        std::unordered_map<std::string, AnyValue> dataMapVec; 
-
         explicit polygonDataFeed(polygonClient&& client);
-        void loadBars(const std::string& ticker,int multiplier,const std::string& from,const std::string& to,const std::string& timespan);
+        std::unordered_map<std::string, AnyValue> loadBars(const std::string& ticker,int multiplier,const std::string& from,const std::string& to,const std::string& timespan);
 };

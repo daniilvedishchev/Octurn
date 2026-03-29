@@ -1,6 +1,8 @@
 #include "backtesterCore.hpp"
 #include "execution/ExecutionEngine.hpp"
 
+#define MIN_BARS_REQ 2
+
 backtesterCore::backtesterCore(std::unordered_map<std::string, AnyValue>& data, config& cfg, MarketDataView& viewer,ExecutionEngine& executionLayer) : data_(std::move(data)), cfg_(std::move(cfg)), account_(account(cfg_.equity)), marketViewer_(viewer), executionLayer_(executionLayer) {
     timestampVec_ = *std::get_if<std::vector<std::string>>(&data_["timestamp"]);
     maxSize_ = timestampVec_.size();
@@ -21,16 +23,19 @@ void backtesterCore::setEntryExit(size_t& i, trade& trade, action actiontype){
     }
 }
 
-void backtesterCore::checkEntryExit(size_t iteration,trade& trade_, bool inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits){
+void backtesterCore::checkEntryExit(size_t iteration,trade& trade_, bool& inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits){
+    std::string tradeID = trade_.ID;
     if (!inTrade){
-            if (entries[iteration] == true && exits[iteration] == false){
-                inTrade = true;
-                setEntryExit(iteration,trade_,action::Entry);
-            }
-        } else {
+        if (entries[iteration] == true && exits[iteration] == false){
+            inTrade = true;
+            openTrades_[tradeID] = trade_;
+            setEntryExit(iteration,trade_,action::Entry);}
+        } 
+        else {
             if (exits[iteration] == true){
                 setEntryExit(iteration,trade_,action::Exit);
-                openTrades_.push_back(trade_);
+                closedTrades_[tradeID] = trade_;
+                openTrades_.erase(tradeID);
                 inTrade = false;
                 trade_ = trade(trade_.ticker);
             }
@@ -38,7 +43,8 @@ void backtesterCore::checkEntryExit(size_t iteration,trade& trade_, bool inTrade
 }
 
 void backtesterCore::markOpenTradesToMarket(double marketPrice){
-    for (auto trade:openTrades_){
+    for (auto IdTrade:openTrades_){
+        auto trade = IdTrade.second;
         account_.markToMarket(marketPrice,trade.price.avgPrice,trade.qty.filledQty,trade.type);
     }
 }
@@ -50,15 +56,14 @@ void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& 
 
     size_t vectSize{entries.size()};
 
-    if (vectSize < 2) {
+    if (vectSize < MIN_BARS_REQ) {
         throw std::runtime_error("Insufficient data to evaluate strategy");
         return;
     }
 
-    for (size_t i{0}; i < vectSize - 1; i++){
+    for (size_t i = 0; i < vectSize - 1; i++){
         double marketPrice = executionLayer_.getValue(marketViewer_.makeField(ticker, "open"), i);
         checkEntryExit(i,trade,inTrade,entries,exits);
         markOpenTradesToMarket(marketPrice);
-        
     }
 }

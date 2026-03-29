@@ -1,9 +1,14 @@
 #include <string>
 #include <vector>
 #include "marketTypes/marketTypes.hpp"
-struct trade {
 
+struct trade {
     std::string ticker;
+    std::string ID;
+
+    double usedMargin;
+    double borrowAccrued;
+
     timestamp timestamp;
 
     std::vector<PriceQty> executionPrice;
@@ -12,10 +17,10 @@ struct trade {
     QtyState qty;
     PriceState price;
 
-    bool isPending;
-
-    double usedMargin;
-    double borrowAccrued;
-
+    tradeStatus status;
+    
     trade(const std::string& ticker_);
+    
+    void generateTradeID();
+    void changeTradeStatusToClosed();
 };

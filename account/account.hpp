@@ -16,11 +16,12 @@ private:
     double reservedMargin;
 public:
     account(double equity);
-
-    void updateEquity();
-    double markToMarket(double currentPrice, double entryPrice, double qty, ordertype side);
-    void realizeTradePnL(double unrealizedPnL);
     double availableFreeCash();
-    void account::updateFreeCash(double amount);
-    void account::updateReservedMargin(double amount);
+
+    double markToMarket(double currentPrice, double entryPrice, double qty, ordertype side);
+    
+    void updateEquity();
+    void realizeTradePnL(double unrealizedPnL);
+    void updateFreeCash(double amount);
+    void updateReservedMargin(double amount);
 };

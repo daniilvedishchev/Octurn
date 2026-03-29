@@ -35,6 +35,11 @@ struct PriceQty{
     double qty;
 };
 
+
+enum class tradeStatus {
+    PENDING,CLOSED
+};
+
 struct Bar {
     double open = 0.0;
     double high = 0.0;

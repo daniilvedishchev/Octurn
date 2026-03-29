@@ -13,7 +13,8 @@ class backtesterCore {
     private:
 
         std::unordered_map<std::string, AnyValue> data_;
-        std::vector<trade> openTrades_;
+        std::unordered_map<std::string,trade> openTrades_;
+        std::unordered_map<std::string,trade> closedTrades_;
         std::vector<std::string> timestampVec_;
         ExecutionEngine executionLayer_;
         MarketDataView marketViewer_;
@@ -30,6 +31,6 @@ class backtesterCore {
         account account_; 
         backtesterCore(std::unordered_map<std::string, AnyValue>& data, config& cfg, MarketDataView& viewer, ExecutionEngine& executionLayer);
         void execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits);
-        void checkEntryExit(size_t iteration, trade& trade_, bool inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits);
+        void checkEntryExit(size_t iteration, trade& trade_, bool& inTrade, const std::vector<bool>& entries, const std::vector<bool>& exits);
         void markOpenTradesToMarket(double marketPrice);
 };

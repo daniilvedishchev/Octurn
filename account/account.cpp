@@ -9,6 +9,10 @@ void account::updateEquity(){
     equity = profitAndLoss.unrealizedPnL + freeCash + reservedMargin;
 }
 
+void account::updateUnrealizedPnl(double amount){
+    profitAndLoss.unrealizedPnL = amount;
+}
+
 double account::markToMarket(double currentPrice, double entryPrice, double qty, ordertype side){
     if (side == ordertype::Buy) {
         return (currentPrice - entryPrice) * qty;

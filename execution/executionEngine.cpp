@@ -66,7 +66,7 @@ void ExecutionEngine::initOrder(trade& trade){
     }
 
     trade.qty.targetQty = risk / dist;
-    trade.isPending = (trade.qty.remainingQty() > 0.0);
+    trade.status = (trade.qty.remainingQty() > 0.0) ? tradeStatus::PENDING : tradeStatus::CLOSED;
 
 }
 
@@ -154,7 +154,7 @@ bool ExecutionEngine::FOK(trade& trade) {
     trade.qty.filledQty = needQty;
     trade.price.avgPrice = price;
 
-    trade.isPending = false;
+    trade.status = tradeStatus::CLOSED;
     applyCashEffect(trade,needQty,price);
 
     stopLoss(trade, price);
@@ -200,7 +200,7 @@ void ExecutionEngine::executeGTCBar(trade& trade,size_t idx){
     applyCashEffect(trade,qty,price);
 
     if (trade.qty.remainingQty() <= 0){
-        trade.isPending=false;
+        trade.status=tradeStatus::CLOSED;
     }
 }
 

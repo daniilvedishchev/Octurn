@@ -42,11 +42,16 @@ void backtesterCore::checkEntryExit(size_t iteration,trade& trade_, bool& inTrad
         }
 }
 
-void backtesterCore::markOpenTradesToMarket(double marketPrice){
-    for (auto IdTrade:openTrades_){
-        auto trade = IdTrade.second;
-        account_.markToMarket(marketPrice,trade.price.avgPrice,trade.qty.filledQty,trade.type);
+void backtesterCore::markOpenTradesToMarket(size_t idx){
+    double accruedUnrealizedPnl{0};
+    for (auto& IdTrade:openTrades_){
+        auto& trade = IdTrade.second;
+        double marketPrice = executionLayer_.getValue(marketViewer_.makeField(trade.ticker, "open"), idx);
+        double delta = account_.markToMarket(marketPrice,trade.price.avgPrice,trade.qty.filledQty,trade.type);
+        accruedUnrealizedPnl+=delta;
     }
+    account_.updateUnrealizedPnl(accruedUnrealizedPnl);
+    account_.updateEquity();
 }
 
 void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& entries,const std::vector<bool>& exits){
@@ -62,8 +67,9 @@ void backtesterCore::execute(const std::string& ticker,const std::vector<bool>& 
     }
 
     for (size_t i = 0; i < vectSize - 1; i++){
-        double marketPrice = executionLayer_.getValue(marketViewer_.makeField(ticker, "open"), i);
         checkEntryExit(i,trade,inTrade,entries,exits);
-        markOpenTradesToMarket(marketPrice);
+        if (!openTrades_.empty()){
+            markOpenTradesToMarket(i);
+        }
     }
 }

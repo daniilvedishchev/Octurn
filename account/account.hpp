@@ -24,4 +24,5 @@ public:
     void realizeTradePnL(double unrealizedPnL);
     void updateFreeCash(double amount);
     void updateReservedMargin(double amount);
+    void updateUnrealizedPnl(double amount);
 };

@@ -5,8 +5,14 @@ parser::parser(const std::vector<Token> tokens):tokens_(std::move(tokens)){}
 
 void parser::parse(){
     for (Token token: tokens_){
-        if (configTokens.contains(token.type)){
-            
-        }
+        
     }
+}
+
+void parser::consumeToken(){
+    idx_++;
+}
+
+Token parser::currentToken(){
+    return tokens_[idx_];
 }

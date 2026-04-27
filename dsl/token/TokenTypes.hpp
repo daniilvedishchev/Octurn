@@ -1,3 +1,5 @@
+#pragma once
+
 enum class tokenType{
     // SPECIAL
     EndOfFile,
@@ -21,7 +23,6 @@ enum class tokenType{
     LeftParen,
     RightParen,
     Comma,
-    Percent,
 
     // ARITHMETIC
     Minus,

@@ -11,9 +11,12 @@ find_package(nlohmann_json REQUIRED)
 
 # ---- CORE ---- #
 add_library(octurn_core STATIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/node/Node.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/parser/Parser.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lexer/Lexer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer/Lexer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer/LexerLiterals.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer/LexerOps.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer/LexerSpaces.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/lexer/LexerWords.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dsl/validator/Validator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/interpreter/Interpreter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/Utils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/log/logHandler.cpp
@@ -28,12 +31,13 @@ add_library(octurn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/polygon/polygonDataFeed.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/engine/octurn.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backtester/backtesterCore.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/execution/ExecutionEngine.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/execution/executionEngine.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/trade/trade.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/account/account.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/equity/equity.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/dataLayer/DataLayer.cpp
-
 )
-  
+
 target_include_directories(octurn_core PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   "/opt/homebrew/include"

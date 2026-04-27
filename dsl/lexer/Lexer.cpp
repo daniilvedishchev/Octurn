@@ -66,5 +66,5 @@ void Lexer::scanToken_(){
 }
 
 void Lexer::emit_(tokenType type, const std::string& lexeme, std::size_t line, std::size_t col){
-    tokens.emplace_back(Token{.lexeme = lexeme, .col = col, .line = line, .type = type});
+    tokens.emplace_back(Token{.type = type, .lexeme = lexeme, .line = line, .col = col});
 }

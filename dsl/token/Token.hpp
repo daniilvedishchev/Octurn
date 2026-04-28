@@ -5,7 +5,7 @@
 
 #include "TokenTypes.hpp"
 
-struct Token{
+struct Token {
     tokenType type{tokenType::EndOfFile};
     std::string lexeme;
     size_t line{1};

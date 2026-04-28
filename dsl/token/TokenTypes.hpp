@@ -53,5 +53,6 @@ enum class tokenType{
     _range,
     _date,
     _dailyMaxLoss,
-    _maxAccountLoss
+    _maxAccountLoss,
+    _fill
 };

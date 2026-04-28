@@ -1,5 +1,7 @@
 #include "parser.hpp"
 #include "dsl/parser/config/configTokens.hpp"
+#include "dsl/parser/config/configSetters.hpp"
+#include "dsl/parser/config/config.hpp"
 
 parser::parser(const std::vector<Token> tokens):tokens_(std::move(tokens)){}
 

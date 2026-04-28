@@ -4,6 +4,7 @@
 #include "dsl/fields/execution/execution.hpp"
 #include "dsl/datetime/datetime.hpp"
 #include "dsl/datetime/range.hpp"
+#include "dsl/fields/fill/fill.hpp"
 #include "namespace/namespace.hpp"
 #include "dataLayer/broker/brokers.hpp"
 
@@ -13,6 +14,7 @@ struct config {
     execution execution;
     brokers broker;
     range range;
+    fill fill;
     
     Octurn::percent slippage;
     Octurn::percent brokerfee;

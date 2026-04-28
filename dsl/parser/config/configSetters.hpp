@@ -5,7 +5,9 @@
 #include "dsl/fields/session/sessionByName.hpp"
 #include "dsl/fields/mode/modeByName.hpp"
 #include "dsl/fields/slippage/slippageByName.hpp"
-#include "dsl/errors/Errors.hpp"
+#include "dsl/fields/fill/fillByName.hpp"
+#include "dsl/fields/execution/executionByName.hpp"
+#include "dsl/errors/ErrorHandler.hpp"
 
 #include "namespace/namespace.hpp"
 
@@ -23,5 +25,7 @@ auto lookupSetter(const Dict& dictName, Field config::*member){
 static const std::unordered_map<tokenType,Octurn::setter> configSetterMap = {
     {tokenType::_session, lookupSetter<SessionError>(sessionByName, &config::session)},
     {tokenType::_mode, lookupSetter<ModeError>(modeByName, &config::mode)},
-    {tokenType::_slippage, lookupSetter<SlippageError>(slippageByName, &config::slippage)}
+    {tokenType::_slippage, lookupSetter<SlippageError>(slippageByName, &config::slippage)},
+    {tokenType::_fill, lookupSetter<FillError>(fillByName, &config::fill)},
+    {tokenType::_execution, lookupSetter<ExecutionError>(executionByName, &config::execution)}
 };

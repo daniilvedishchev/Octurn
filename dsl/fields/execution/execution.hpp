@@ -7,8 +7,3 @@ enum execution {
     market,
     limit
 };
-
-enum fill {
-    fok,
-    gtc
-};

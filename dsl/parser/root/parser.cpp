@@ -7,7 +7,10 @@ parser::parser(const std::vector<Token> tokens):tokens_(std::move(tokens)){}
 
 void parser::parse(){
     for (Token token: tokens_){
-        
+        auto cfgIt = configSetterMap.find(token.type);
+        if (cfgIt != configSetterMap.end()){
+            cfgIt->second(token,cfg_);
+        }
     }
 }
 

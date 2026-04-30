@@ -1,7 +1,7 @@
 #include <string>
 #include "dsl/parser/config/config.hpp"
 
-struct Strategy {
+struct strategy {
     std::string name;
     config cfg;
 };

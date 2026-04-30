@@ -1,3 +1,4 @@
+# pragma once
 #include "dsl/token/TokenTypes.hpp"
 #include "dsl/fields/session/session.hpp"
 #include "dsl/fields/mode/mode.hpp"
